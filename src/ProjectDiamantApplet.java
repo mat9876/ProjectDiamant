@@ -50,16 +50,16 @@ public class ProjectDiamantApplet extends PApplet {
         imageMode(CENTER);
 
         //Spawn the player in game on the given x- and y-coordinates.
-        player = new Sprite("YSquare.png", 1, 200, 900);
+        player = new Sprite("./resources/YSquare.png", 1, 200, 900);
         player.change_x = 0;
         player.change_y = 0;
         //Load the different platforms for the game.
-        platforms = new ArrayList<Sprite>();
-        Diamonds = new ArrayList<Sprite>();
-        Square = loadImage("Square.png");
-        Diamond = loadImage("Diamond.png");
+        platforms = new ArrayList<>();
+        Diamonds = new ArrayList<>();
+        Square = loadImage("./resources/Square.png");
+        Diamond = loadImage("./resources/Diamond.png");
         //Load the .csv file that tells the program where to place platforms.
-        createPlatforms("map.csv");
+        createPlatforms("./resources/map.csv");
     }
 
     // Fires every frame
