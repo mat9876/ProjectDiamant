@@ -109,11 +109,11 @@ public class ProjectDiamantApplet extends PApplet {
     public void keyReleased() {
         // Movement
         //Right(D and ->)
-        if (keyCode == 68 || keyCode == 39) {
+        if (player.change_x > 0 && ((keyCode == 68 || keyCode == 39)) {
             player.change_x = 0;
         }
         //Left (A and <-)
-        else if (keyCode == 65 || keyCode == 37) {
+        else if ((keyCode == 65 || keyCode == 37)) {
             player.change_x = 0;
         }
     }
