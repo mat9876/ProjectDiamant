@@ -17,8 +17,9 @@ PImage Square, Diamond;
 ArrayList<Sprite> platforms = new ArrayList<Sprite>();
 ArrayList<Sprite> diamonds = new ArrayList<Sprite>();
 
-// Integer dictionary for resolving conflicting inputs
-IntDict inputQueue = new IntDict();
+// Input queue for resolving conflicting inputs.
+// Should be sorted by most recent (newer -> older)
+ArrayList<Integer> inputQueue = new ArrayList<>();
 
 //Global variables that can be used in the entire program.
   // Counter for the amount of frames that have passed.
@@ -50,9 +51,10 @@ void setup(){
   //Load the first level
   loadLevel(levelNum);
 }
-//Draw backgrond for platforms to appear on during gameplay. 
+// Logic that should run every frame 
 void draw(){
   frameNum++;
+  resolveInput();
 
   //Draw a gray background to make the game appear like it is taking place in a cave.
   background(55,44,44);
@@ -85,6 +87,13 @@ public void drawText(){
   text("diamonds: " + numDiamonds + "/" + maxDiamonds, view_x + 50, view_y + 50);
   text("isGameOver: " + isGameOver, view_x + 50, view_y + 100); 
   text("frameNum: " + frameNum, view_x + 50, view_y + 150);
+  
+  String iQueue = "";
+  for (int input : inputQueue) {
+    iQueue = iQueue + input + ";";
+  }
+  text("inputQueue: " + iQueue, view_x + 50, view_y + 200);
+
   fill(0, 408, 612);
 
 }
@@ -211,38 +220,45 @@ void levelComplete(){
 
 // TODO: perform actions based on currently pressed keys
 void resolveInput() {
+  boolean canMoveLR = true;
 
+  for (int input : inputQueue) {
+    //Right(D and ->)
+    if (canMoveLR && (input == 68 || input == 39)) {
+      player.change_x = MOVE_SPEED;
+      canMoveLR = false;
+    }
+    //Left (A and <-)
+    else if (canMoveLR && (input == 65 || input == 37)) {
+      player.change_x = -MOVE_SPEED;
+      canMoveLR = false;
+    }
+    //Jump (spacebar)
+    else if(input == 32 && isOnPlatforms(player, platforms)){
+      player.change_y = -JUMP_SPEED;
+    }
+    //Place a platform underneath the playet when pressing 
+    else if(input == 32 && !isOnPlatforms(player, platforms)){
+      
+    }
+  }
+  // Stop left-right movement if no such key is pressed
+  if (canMoveLR) {
+    player.change_x = 0;
+  }
 }
 
-//Move the player when a certain key is pressed.
+// Add key to queue if pressed
 void keyPressed(){
-  //Right(D and ->)
- if(keyCode == 68 || keyCode == 39){
-    player.change_x = MOVE_SPEED;
-    inputQueue.set("moveRight", frameNum);
+  // But not if it's already pressed
+  for (int input : inputQueue) {
+    if (input == keyCode) {
+      return;
+    }
   }
-  //Left (A and <-)
-  else if(keyCode == 65 || keyCode == 37){
-    player.change_x = -MOVE_SPEED;
-    inputQueue.set("moveLeft", frameNum);
-  }
-  //Jump (spacebar)
-  else if(keyCode == 32 && isOnPlatforms(player, platforms)){
-    player.change_y = -JUMP_SPEED;
-  }
-  //Place a platform underneath the playet when pressing 
-  else if(keyCode == 32 && !isOnPlatforms(player, platforms)){
-    
-  }
+  inputQueue.add(0, keyCode);
 }
-//Stop moving the player when the user let's go off the key.
+// Remove key from queue if released
 void keyReleased(){
-  //Right(D and ->)
-  if(player.change_x > 0 && (keyCode == 68 || keyCode == 39)){
-    player.change_x = 0;
-  }
-  //Left (A and <-)
-  else if(player.change_x < 0 && (keyCode == 65 || keyCode == 37)){
-    player.change_x = 0;
-  } 
+  inputQueue.remove((Integer) keyCode);
 }
