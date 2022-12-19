@@ -3,7 +3,9 @@ final static float MOVE_SPEED = 6;
 final static float SPRITE_SCALE = 50.0/128;
 final static float SPRITE_SIZE = 50;
 final static float GRAVITY = 0.6;
-final static float JUMP_SPEED = 10; 
+final static float JUMP_SPEED = 10;
+final static int DEFAULT_PLAYER_X = 200;
+final static int DEFAULT_PLAYER_Y = 900;
 
 final static float RIGHT_MARGIN = 400;
 final static float LEFT_MARGIN = 60;
@@ -12,10 +14,17 @@ final static float VERTICAL_MARGIN = 40;
 //Arraylist of platforms that appear in the game.
 Sprite player;
 PImage Square, Diamond;
-ArrayList<Sprite> platforms;
-ArrayList<Sprite> Diamonds;
+ArrayList<Sprite> platforms = new ArrayList<Sprite>();
+ArrayList<Sprite> diamonds = new ArrayList<Sprite>();
+
+// Integer dictionary for resolving conflicting inputs
+IntDict inputQueue = new IntDict();
 
 //Global variables that can be used in the entire program.
+  // Counter for the amount of frames that have passed.
+  int frameNum = 0;
+  // Keep track of current level number
+  int levelNum = 0;
   //Int to count the amount of diamonds the player has collected.
   int numDiamonds = 0;
   //Int to count the amount of diamonds in the game.
@@ -30,21 +39,21 @@ ArrayList<Sprite> Diamonds;
 void setup(){
   fullScreen();
   imageMode(CENTER);
-  
+
   //Spawn the player in game on the given x- and y-cordinates.
-  player = new Sprite("YSquare.png", 1.0, 200, 900);
+  player = new Sprite("YSquare.png", 1.0, DEFAULT_PLAYER_X, DEFAULT_PLAYER_Y);
   player.change_x = 0;
   player.change_y = 0;
   //Load the different platforms for the game.
-  platforms = new ArrayList<Sprite>();
-  Diamonds = new ArrayList<Sprite>();
   Square = loadImage("Square.png");
   Diamond = loadImage("Diamond.png");
-  //Load the .csv file that tells the program where to place platforms.
-  createPlatforms("map.csv");
+  //Load the first level
+  loadLevel(levelNum);
 }
 //Draw backgrond for platforms to appear on during gameplay. 
 void draw(){
+  frameNum++;
+
   //Draw a gray background to make the game appear like it is taking place in a cave.
   background(55,44,44);
   //Draw sprites to display when playing the game.
@@ -54,9 +63,9 @@ void draw(){
   resolvePlatformCollisions(player, platforms);
   
   //Run two voids to display and collect diamonds.
-   display();
-   drawText();
-   collectDiamond();
+  display();
+  drawText();
+  collectDiamond();
 } 
 
 //Code for handeling jumping and applying gravity to the player.
@@ -68,14 +77,15 @@ public boolean isOnPlatforms(Sprite s, ArrayList<Sprite>platforms){
     return true;
   }
   else {
-      return false;
- }
+    return false;
+  }
 }
 public void drawText(){
-textSize(24);
-text("Diamonds: " + numDiamonds + "/" + maxDiamonds, view_x + 50, view_y + 50);
-text("isGameOver: " + isGameOver, view_x + 50, view_y + 100); 
-fill(0, 408, 612);
+  textSize(24);
+  text("diamonds: " + numDiamonds + "/" + maxDiamonds, view_x + 50, view_y + 50);
+  text("isGameOver: " + isGameOver, view_x + 50, view_y + 100); 
+  text("frameNum: " + frameNum, view_x + 50, view_y + 150);
+  fill(0, 408, 612);
 
 }
 
@@ -136,29 +146,41 @@ public ArrayList<Sprite> checkCollisionList(Sprite s, ArrayList<Sprite> list){
 void display(){
   for(Sprite s: platforms) {
     s.display();
-}
+  }
     //Display diamonds.
-    for(Sprite Diamond: Diamonds) {
+    for(Sprite Diamond: diamonds) {
     Diamond.display();
- }
+  }
 }
 //Script for collecting diamonds.
 void collectDiamond(){
-  ArrayList<Sprite> Dia_list = checkCollisionList(player, Diamonds);
+  ArrayList<Sprite> Dia_list = checkCollisionList(player, diamonds);
   if(Dia_list.size() > 0){
     for(Sprite Diamond: Dia_list){
       numDiamonds++;
-      Diamonds.remove(Diamond);
+      diamonds.remove(Diamond);
     }
   }
-if(numDiamonds == maxDiamonds){
-  isGameOver = true;
- }
+  if(numDiamonds == maxDiamonds){
+    levelComplete();
+  }
 }
+// Load a level
+void loadLevel(int levelNum) {
+  // Clear level
+  platforms.clear();
+  diamonds.clear();
+  numDiamonds = 0;
+  maxDiamonds = 0;
 
-//Create platforms on canvas for players
-void createPlatforms(String filename){
-  String[] lines = loadStrings(filename);
+  // Reset player
+  player.center_x = DEFAULT_PLAYER_X;
+  player.center_y = DEFAULT_PLAYER_Y;
+  player.change_x = 0;
+  player.change_y = 0;
+
+  // Create platforms on canvas for players
+  String[] lines = loadStrings(String.format("map_%02d.csv", levelNum));
   for(int row = 0; row < lines.length; row++){
     String[] values = split(lines[row], ",");
     for(int col = 0; col < values.length; col++){
@@ -169,26 +191,40 @@ void createPlatforms(String filename){
         s.center_y = SPRITE_SIZE/2 + row * SPRITE_SIZE;
         platforms.add(s);
       }   
-      //Create Diamonds depending on the position of the letter 2.
+      //Create diamonds depending on the position of the letter 2.
       else if(values[col].equals("2")){
         Sprite s = new Sprite(Diamond, SPRITE_SCALE);
         s.center_x = SPRITE_SIZE/2 + col * SPRITE_SIZE;
         s.center_y = SPRITE_SIZE/2 + row * SPRITE_SIZE;
-        Diamonds.add(s);
+        diamonds.add(s);
         maxDiamonds++;
       }
+    }
   }
- }
 }
+
+// Logic for when the player completes a level
+void levelComplete(){
+  levelNum++;
+  loadLevel(levelNum);
+}
+
+// TODO: perform actions based on currently pressed keys
+void resolveInput() {
+
+}
+
 //Move the player when a certain key is pressed.
 void keyPressed(){
   //Right(D and ->)
  if(keyCode == 68 || keyCode == 39){
     player.change_x = MOVE_SPEED;
+    inputQueue.set("moveRight", frameNum);
   }
   //Left (A and <-)
   else if(keyCode == 65 || keyCode == 37){
     player.change_x = -MOVE_SPEED;
+    inputQueue.set("moveLeft", frameNum);
   }
   //Jump (spacebar)
   else if(keyCode == 32 && isOnPlatforms(player, platforms)){
