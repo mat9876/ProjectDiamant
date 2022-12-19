@@ -176,7 +176,7 @@ void display(){
 // Script for collecting diamonds.
 void collectDiamond(){
   ArrayList<Sprite> diamond_collision_list = checkCollisionList(player, diamonds);
-  if(Dia_list.size() > 0){
+  if(diamond_collision_list.size() > 0){
     for(Sprite diamond: diamond_collision_list){
       numDiamonds++;
       diamonds.remove(diamond);
