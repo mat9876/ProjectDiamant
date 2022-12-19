@@ -92,6 +92,35 @@ void keyReleased() {
 }
 
 //// UTILITY FUNCTIONS ////
+// Perform actions based on currently pressed keys
+void resolveInput() {
+  boolean canMoveLR = true;
+
+  for (int input : inputQueue) {
+    // Right(D and ->)
+    if (canMoveLR && (input == 68 || input == 39)) {
+      player.change_x = MOVE_SPEED;
+      canMoveLR = false;
+    }
+    // Left (A and <-)
+    else if (canMoveLR && (input == 65 || input == 37)) {
+      player.change_x = -MOVE_SPEED;
+      canMoveLR = false;
+    }
+    // Jump (spacebar)
+    else if(input == 32 && isOnPlatforms(player, platforms)){
+      player.change_y = -JUMP_SPEED;
+    }
+    // TODO: Place a platform underneath the playet when pressing 
+    else if(input == 32 && !isOnPlatforms(player, platforms)){
+
+    }
+  }
+  // Stop left-right movement if no such key is pressed
+  if (canMoveLR) {
+    player.change_x = 0;
+  }
+}
 // Code for handeling jumping and applying gravity to the player.
 public boolean isOnPlatforms(Sprite s, ArrayList<Sprite>platforms) {
   s.center_y += 5;
