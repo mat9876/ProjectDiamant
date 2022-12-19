@@ -37,10 +37,12 @@ boolean isGameOver = false;
 // Float to point to the origin of the game (0,0) (Top left)
 float view_x = 0;
 float view_y = 0;
+// Background Color
+color backgroundColor = color(55,44,44);
 
 //// PROCESSING EVENTS ////
 // Load the main components for the game and run it in fullscreen.
-void setup(){
+void setup() {
   frameRate(60);
   fullScreen();
   imageMode(CENTER);
@@ -56,12 +58,12 @@ void setup(){
   loadLevel(levelNum);
 }
 // Logic that should run every frame 
-void draw(){
+void draw() {
   frameNum++;
   resolveInput();
 
   // Draw a gray background to make the game appear like it is taking place in a cave.
-  background(55,44,44);
+  background(backgroundColor);
   // Draw sprites to display when playing the game.
   player.display();
  
@@ -75,7 +77,7 @@ void draw(){
 }
 
 // Add key to queue if pressed
-void keyPressed(){
+void keyPressed() {
   // But not if it's already pressed
   for (int input : inputQueue) {
     if (input == keyCode) {
@@ -85,24 +87,24 @@ void keyPressed(){
   inputQueue.add(0, keyCode);
 }
 // Remove key from queue if released
-void keyReleased(){
+void keyReleased() {
   inputQueue.remove((Integer) keyCode);
 }
 
 //// UTILITY FUNCTIONS ////
 // Code for handeling jumping and applying gravity to the player.
-public boolean isOnPlatforms(Sprite s, ArrayList<Sprite>platforms){
+public boolean isOnPlatforms(Sprite s, ArrayList<Sprite>platforms) {
   s.center_y += 5;
   ArrayList<Sprite> col_list = checkCollisionList(s, platforms);
   s.center_y -= 5;
-  if(col_list.size() > 0){
+  if(col_list.size() > 0) {
     return true;
   }
   else {
     return false;
   }
 }
-public void drawText(){
+public void drawText() {
   textSize(24);
   text("diamonds: " + numDiamonds + "/" + maxDiamonds, view_x + 50, view_y + 50);
   text("isGameOver: " + isGameOver, view_x + 50, view_y + 100); 
@@ -118,10 +120,10 @@ public void drawText(){
 
 }
 
-public void resolvePlatformCollisions(Sprite s, ArrayList<Sprite> walls){
+public void resolvePlatformCollisions(Sprite s, ArrayList<Sprite> walls) {
   s.change_y += GRAVITY;
   // Check the top and bottom of the player
-   s.center_y += s.change_y;
+  s.center_y += s.change_y;
   ArrayList<Sprite> col_list = checkCollisionList(s, walls);
   if (col_list.size() > 0) {
     Sprite collided = col_list.get(0);
@@ -132,11 +134,11 @@ public void resolvePlatformCollisions(Sprite s, ArrayList<Sprite> walls){
     // Check if player is colliding with the bottom of a collision.
     else if (s.change_y < 0) {
       s.setTop(collided.getBottom());
-  }
-  s.change_y = 0;
-} 
+    }
+    s.change_y = 0;
+  } 
   // Check the left and right of the player.
-   s.center_x += s.change_x;
+  s.center_x += s.change_x;
   col_list = checkCollisionList(s, walls);
   if (col_list.size() > 0) {
     Sprite collided = col_list.get(0);
@@ -147,25 +149,25 @@ public void resolvePlatformCollisions(Sprite s, ArrayList<Sprite> walls){
     //Check if player is colliding with the left of a collision.
     else if (s.change_x < 0) {
       s.setLeft(collided.getRight());
-  }
- 
- } 
+    }
+  } 
 }
 // Run a simple check for collision to make platforms solid.
-boolean checkCollision(Sprite s1, Sprite s2){
+boolean checkCollision(Sprite s1, Sprite s2) {
   return !(s1.getRight() <= s2.getLeft() || s1.getLeft() >= s2.getRight() || s1.getBottom() <= s2.getTop() || s1.getTop() >= s2.getBottom());
 }
 // Check the amount of sprites the player is colliding and add them to an ArrayList.
 public ArrayList<Sprite> checkCollisionList(Sprite s, ArrayList<Sprite> list){
   ArrayList<Sprite> collision_list = new ArrayList<Sprite>();
   for(Sprite p: list){
-    if(checkCollision(s, p))
+    if(checkCollision(s, p)) {
       collision_list.add(p);
+    }
   }
   return collision_list;
 }
 // Display platforms.
-void display(){
+void display() {
   for(Sprite s: platforms) {
     s.display();
   }
@@ -175,7 +177,7 @@ void display(){
   }
 }
 // Script for collecting diamonds.
-void collectDiamond(){
+void collectDiamond() {
   ArrayList<Sprite> diamond_collision_list = checkCollisionList(player, diamonds);
   if(diamond_collision_list.size() > 0){
     for(Sprite diamond: diamond_collision_list){
@@ -226,37 +228,7 @@ void loadLevel(int levelNum) {
 }
 
 // Logic for when the player completes a level
-void levelComplete(){
+void levelComplete() {
   levelNum++;
   loadLevel(levelNum);
-}
-
-// Perform actions based on currently pressed keys
-void resolveInput() {
-  boolean canMoveLR = true;
-
-  for (int input : inputQueue) {
-    // Right(D and ->)
-    if (canMoveLR && (input == 68 || input == 39)) {
-      player.change_x = MOVE_SPEED;
-      canMoveLR = false;
-    }
-    // Left (A and <-)
-    else if (canMoveLR && (input == 65 || input == 37)) {
-      player.change_x = -MOVE_SPEED;
-      canMoveLR = false;
-    }
-    // Jump (spacebar)
-    else if(input == 32 && isOnPlatforms(player, platforms)){
-      player.change_y = -JUMP_SPEED;
-    }
-    // TODO: Place a platform underneath the playet when pressing 
-    else if(input == 32 && !isOnPlatforms(player, platforms)){
-      
-    }
-  }
-  // Stop left-right movement if no such key is pressed
-  if (canMoveLR) {
-    player.change_x = 0;
-  }
 }
