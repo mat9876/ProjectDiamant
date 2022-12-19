@@ -41,6 +41,7 @@ float view_y = 0;
 //// PROCESSING EVENTS ////
 // Load the main components for the game and run it in fullscreen.
 void setup(){
+  frameRate(60);
   fullScreen();
   imageMode(CENTER);
 
