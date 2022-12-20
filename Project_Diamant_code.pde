@@ -1,3 +1,14 @@
+//// GLOBAL DEFINITIONS ////
+// Display
+final static int TARGET_DISPLAY_WIDTH = 1920;
+final static int TARGET_DISPLAY_HEIGHT = 1080;
+final static int TARGET_FRAMERATE = 60;
+
+// Alignment
+final static float RIGHT_MARGIN = 400;
+final static float LEFT_MARGIN = 60;
+final static float VERTICAL_MARGIN = 40;
+
 // Intengers for the player character
 final static float MOVE_SPEED = 6;
 final static float SPRITE_SCALE = 50.0/128;
@@ -6,13 +17,6 @@ final static float GRAVITY = 0.6;
 final static float JUMP_SPEED = 10;
 final static int DEFAULT_PLAYER_X = 200;
 final static int DEFAULT_PLAYER_Y = 900;
-
-final static float RIGHT_MARGIN = 400;
-final static float LEFT_MARGIN = 60;
-final static float VERTICAL_MARGIN = 40;
-
-final static int GAME_DISPLAY_WIDTH = 1920;
-final static int GAME_DISPLAY_HEIGHT = 1080;
 
 //// GLOBAL VARIABLES ////
 // Arraylist of platforms that appear in the game.
@@ -43,18 +47,18 @@ int maxDiamonds = 0;
 boolean isSpacebarActionable = true;
 // Display if the player can still play the game or not.  
 boolean isGameOver = false;
-// Float to point to the origin of the game (0,0) (Top left)
+// Float to point to the origin of the viewport (0,0) (Top left)
 float view_x = 0;
 float view_y = 0;
 // Background Color
 color backgroundColor = color(55,44,44);
 
 //// PROCESSING EVENTS ////
-// Logic that should run before start-up
+// Logic that should run at start-up but cannot be run in `setup()`
 public void settings() {
   // Open in windowed mode if screen is larger than display, fullscreen if not.
-  if (displayWidth > GAME_DISPLAY_WIDTH || displayHeight > GAME_DISPLAY_HEIGHT) {
-    size(GAME_DISPLAY_WIDTH, GAME_DISPLAY_HEIGHT);
+  if (displayWidth > TARGET_DISPLAY_WIDTH || displayHeight > TARGET_DISPLAY_HEIGHT) {
+    size(TARGET_DISPLAY_WIDTH, TARGET_DISPLAY_HEIGHT);
   }
   else {
     fullScreen();
@@ -63,7 +67,7 @@ public void settings() {
 
 // Logic that should run at start-up
 public void setup() {
-  frameRate(60);
+  frameRate(TARGET_FRAMERATE);
   imageMode(CENTER);
 
   // Spawn the player in game on the given x- and y-cordinates.
@@ -91,7 +95,7 @@ public void draw() {
   background(backgroundColor);
   player.display();
   display();
-  drawText();
+  drawDebugText();
 
   // Calculations after display
 
@@ -191,7 +195,7 @@ public boolean isLanded(Sprite sprite, ArrayList<Sprite>platforms) {
   return false;
 }
 
-public void drawText() {
+public void drawDebugText() {
   textSize(24);
 
   String iQueue = "";
@@ -204,7 +208,7 @@ public void drawText() {
     "Diamonds: " + numDiamonds + "/" + maxDiamonds,
     "Platforms: " + playerPlatforms.size() + "/" + maxPlayerPlatformAmount,
     "isGameOver: " + isGameOver,
-    "FPS: " + (int) round(frameRate),
+    String.format("Speed: %01.1f (%02dfps)", frameRate/TARGET_FRAMERATE, round(frameRate)),
     "frameCount: " + frameCount,
     "inputQueue: " + iQueue,
   };
@@ -301,20 +305,7 @@ public void collectDiamond() {
 
 // Load a level
 public void loadLevel(int levelNum) {
-  // Clear level
-  platforms.clear();
-  diamonds.clear();
-  playerPlatforms.clear();
-  collidables.clear();
-  numDiamonds = 0;
-  maxDiamonds = 0;
-
-  // Reset player
-  player.center_x = DEFAULT_PLAYER_X;
-  player.center_y = DEFAULT_PLAYER_Y;
-  player.change_x = 0;
-  player.change_y = 0;
-
+  unloadLevel();
   // Create platforms on canvas for players
   String[] lines = loadStrings(String.format("map_%02d.csv", levelNum));
   for(int row = 0; row < lines.length; row++){
@@ -339,6 +330,22 @@ public void loadLevel(int levelNum) {
       }
     }
   }
+}
+
+public void unloadLevel() {
+  // Clear level
+  platforms.clear();
+  diamonds.clear();
+  playerPlatforms.clear();
+  collidables.clear();
+  numDiamonds = 0;
+  maxDiamonds = 0;
+
+  // Reset player
+  player.center_x = DEFAULT_PLAYER_X;
+  player.center_y = DEFAULT_PLAYER_Y;
+  player.change_x = 0;
+  player.change_y = 0;
 }
 
 // Logic for when the player completes a level
