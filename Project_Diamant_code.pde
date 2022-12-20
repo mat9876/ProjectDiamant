@@ -30,6 +30,8 @@ PImage square_img, diamond_img, playerPlatform_img;
 
 // Keep track of current level number
 int levelNum = 0;
+// Maximum amount of platforms the player can create
+int maxPlayerPlatformAmount = 3;
 // Int to count the amount of diamonds the player has collected.
 int numDiamonds = 0;
 // Int to count the amount of diamonds in the game.
@@ -135,6 +137,10 @@ void resolveInput() {
 // Attempts to place a platform at the given location
 // Returns true if successful, false if not.
 public boolean placePlatform(float x, float y) {
+  if (playerPlatforms.size() >= maxPlayerPlatformAmount) {
+    return false;
+  }
+
   Sprite platform = new Sprite(playerPlatform_img, SPRITE_SCALE, x, y);
   if (checkCollisionList(platform, collidables).size() > 0) {
     return false;
@@ -164,18 +170,25 @@ public boolean isLanded(Sprite sprite, ArrayList<Sprite>platforms) {
 
 public void drawText() {
   textSize(24);
-  text("diamonds: " + numDiamonds + "/" + maxDiamonds, view_x + 50, view_y + 50);
-  text("isGameOver: " + isGameOver, view_x + 50, view_y + 100); 
-  text("frameCount: " + frameCount, view_x + 50, view_y + 150);
-  
+
   String iQueue = "";
   for (int input : inputQueue) {
-    iQueue = iQueue + input + ";";
+    iQueue += input + ";";
   }
-  text("inputQueue: " + iQueue, view_x + 50, view_y + 200);
+
+  String[] textToDisplay = {
+    "diamonds: " + numDiamonds + "/" + maxDiamonds,
+    "platforms: " + playerPlatforms.size() + "/" + maxPlayerPlatformAmount,
+    "isGameOver: " + isGameOver,
+    "frameCount: " + frameCount,
+    "inputQueue: " + iQueue,
+  };
+
+  for (int i = 0; i < textToDisplay.length; i++) {
+    text(textToDisplay[i], view_x + LEFT_MARGIN, view_y + VERTICAL_MARGIN + 50*i);
+  }
 
   fill(0, 408, 612);
-
 }
 
 // Handles movement that should happen per frame, including collisions
