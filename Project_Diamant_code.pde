@@ -11,6 +11,9 @@ final static float RIGHT_MARGIN = 400;
 final static float LEFT_MARGIN = 60;
 final static float VERTICAL_MARGIN = 40;
 
+final static int GAME_DISPLAY_WIDTH = 1920;
+final static int GAME_DISPLAY_HEIGHT = 1080;
+
 //// GLOBAL VARIABLES ////
 // Arraylist of platforms that appear in the game.
 ArrayList<Sprite> platforms = new ArrayList<>();
@@ -47,10 +50,20 @@ float view_y = 0;
 color backgroundColor = color(55,44,44);
 
 //// PROCESSING EVENTS ////
+// Logic that should run before start-up
+public void settings() {
+  // Open in windowed mode if screen is larger than display, fullscreen if not.
+  if (displayWidth > GAME_DISPLAY_WIDTH || displayHeight > GAME_DISPLAY_HEIGHT) {
+    size(GAME_DISPLAY_WIDTH, GAME_DISPLAY_HEIGHT);
+  }
+  else {
+    fullScreen();
+  }
+}
+
 // Logic that should run at start-up
-void setup() {
+public void setup() {
   frameRate(60);
-  fullScreen();
   imageMode(CENTER);
 
   // Spawn the player in game on the given x- and y-cordinates.
@@ -68,7 +81,7 @@ void setup() {
 }
 
 // Logic that should run every frame 
-void draw() {
+public void draw() {
   // Calculations before display
   resolveInput();
   collectDiamond();
@@ -85,7 +98,7 @@ void draw() {
 }
 
 // Logic that runs every keypress (including repeats)
-void keyPressed() {
+public void keyPressed() {
   // Add key to queue if pressed, but not if it's already pressed
   for (int input : inputQueue) {
     if (input == keyCode) {
@@ -96,7 +109,7 @@ void keyPressed() {
   inputQueue.add(0, keyCode);
 }
 // Logic that runs every key release
-void keyReleased() {
+public void keyReleased() {
   if (keyCode == 32) {
     isSpacebarActionable = true;
   }
@@ -106,7 +119,7 @@ void keyReleased() {
 
 //// UTILITY FUNCTIONS ////
 // Perform actions based on currently pressed keys
-void resolveInput() {
+public void resolveInput() {
   boolean canMoveLR = true;
 
   for (int input : inputQueue) {
@@ -171,12 +184,11 @@ public boolean isLanded(Sprite sprite, ArrayList<Sprite>platforms) {
   sprite.center_y += 5;
   ArrayList<Sprite> col_list = checkCollisionList(sprite, platforms);
   sprite.center_y -= 5;
+
   if(col_list.size() > 0) {
     return true;
   }
-  else {
-    return false;
-  }
+  return false;
 }
 
 public void drawText() {
@@ -188,9 +200,11 @@ public void drawText() {
   }
 
   String[] textToDisplay = {
-    "diamonds: " + numDiamonds + "/" + maxDiamonds,
-    "platforms: " + playerPlatforms.size() + "/" + maxPlayerPlatformAmount,
+    "Level: " + levelNum,
+    "Diamonds: " + numDiamonds + "/" + maxDiamonds,
+    "Platforms: " + playerPlatforms.size() + "/" + maxPlayerPlatformAmount,
     "isGameOver: " + isGameOver,
+    "FPS: " + (int) round(frameRate),
     "frameCount: " + frameCount,
     "inputQueue: " + iQueue,
   };
@@ -243,7 +257,7 @@ public void progressMovement() {
 }
 
 // Run a simple check for collision to make platforms solid.
-boolean checkCollision(Sprite s1, Sprite s2) {
+public boolean checkCollision(Sprite s1, Sprite s2) {
   return !(s1.getRight() <= s2.getLeft() || s1.getLeft() >= s2.getRight() || s1.getBottom() <= s2.getTop() || s1.getTop() >= s2.getBottom());
 }
 
@@ -259,7 +273,7 @@ public ArrayList<Sprite> checkCollisionList(Sprite sprite_1, ArrayList<Sprite> l
 }
 
 // Display sprites
-void display() {
+public void display() {
   for (Sprite sprite : platforms) {
     sprite.display();
   }
@@ -272,7 +286,7 @@ void display() {
 }
 
 // Script for collecting diamonds.
-void collectDiamond() {
+public void collectDiamond() {
   ArrayList<Sprite> diamond_collision_list = checkCollisionList(player, diamonds);
   if(diamond_collision_list.size() > 0){
     for(Sprite diamond: diamond_collision_list){
@@ -286,7 +300,7 @@ void collectDiamond() {
 }
 
 // Load a level
-void loadLevel(int levelNum) {
+public void loadLevel(int levelNum) {
   // Clear level
   platforms.clear();
   diamonds.clear();
@@ -328,7 +342,7 @@ void loadLevel(int levelNum) {
 }
 
 // Logic for when the player completes a level
-void levelComplete() {
+public void levelComplete() {
   levelNum++;
   loadLevel(levelNum);
 }
