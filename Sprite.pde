@@ -24,6 +24,15 @@ public class Sprite{
     change_x = 0;
     change_y = 0;
   }
+  public Sprite(PImage img, float scale, float x, float y){
+    image = img;
+    w = image.width * scale;
+    h = image.height * scale;
+    center_x = x;
+    center_y = y;
+    change_x = 0;
+    change_y = 0;
+  }
   public void display(){
      image(image, center_x, center_y, w, h); 
   }

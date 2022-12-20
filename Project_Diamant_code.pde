@@ -13,8 +13,12 @@ final static float VERTICAL_MARGIN = 40;
 
 //// GLOBAL VARIABLES ////
 // Arraylist of platforms that appear in the game.
-ArrayList<Sprite> platforms = new ArrayList<Sprite>();
-ArrayList<Sprite> diamonds = new ArrayList<Sprite>();
+ArrayList<Sprite> platforms = new ArrayList<>();
+ArrayList<Sprite> diamonds = new ArrayList<>();
+ArrayList<Sprite> playerPlatforms = new ArrayList<>();
+
+// ArrayList of things the player can collide with
+ArrayList<Sprite> collidables = new ArrayList<>();
 
 // Input queue for resolving conflicting inputs.
 // Should be sorted by most recent (newer -> older)
@@ -22,10 +26,8 @@ ArrayList<Integer> inputQueue = new ArrayList<>();
 
 // Sprites / Images
 Sprite player;
-PImage square_img, diamond_img;
+PImage square_img, diamond_img, playerPlatform_img;
 
-// Counter for the amount of frames that have passed.
-int frameNum = 0;
 // Keep track of current level number
 int levelNum = 0;
 // Int to count the amount of diamonds the player has collected.
@@ -41,7 +43,7 @@ float view_y = 0;
 color backgroundColor = color(55,44,44);
 
 //// PROCESSING EVENTS ////
-// Load the main components for the game and run it in fullscreen.
+// Logic that should run at start-up
 void setup() {
   frameRate(60);
   fullScreen();
@@ -51,34 +53,37 @@ void setup() {
   player = new Sprite("YSquare.png", 1.0, DEFAULT_PLAYER_X, DEFAULT_PLAYER_Y);
   player.change_x = 0;
   player.change_y = 0;
-  // Load the different platforms for the game.
+
+  // Load the different assets for the game.
   square_img = loadImage("Square.png");
   diamond_img = loadImage("Diamond.png");
+  playerPlatform_img = loadImage("PlayerPlatform0.png");
+
   // Load the first level
   loadLevel(levelNum);
 }
+
 // Logic that should run every frame 
 void draw() {
-  frameNum++;
+  // Calculations before display
+  frameCount++;
   resolveInput();
-
-  // Draw a gray background to make the game appear like it is taking place in a cave.
-  background(backgroundColor);
-  // Draw sprites to display when playing the game.
-  player.display();
- 
-  // Display platforms
-  resolvePlatformCollisions(player, platforms);
+  collectDiamond();
+  progressMovement();
   
-  // Run two voids to display and collect diamonds.
+  // Display stuff
+  background(backgroundColor);
+  player.display();
   display();
   drawText();
-  collectDiamond();
+
+  // Calculations after display
+
 }
 
-// Add key to queue if pressed
+// Logic that runs every keypress (including repeats)
 void keyPressed() {
-  // But not if it's already pressed
+  // Add key to queue if pressed, but not if it's already pressed
   for (int input : inputQueue) {
     if (input == keyCode) {
       return;
@@ -86,7 +91,7 @@ void keyPressed() {
   }
   inputQueue.add(0, keyCode);
 }
-// Remove key from queue if released
+// Logic that runs every key release
 void keyReleased() {
   inputQueue.remove((Integer) keyCode);
 }
@@ -108,12 +113,17 @@ void resolveInput() {
       canMoveLR = false;
     }
     // Jump (spacebar)
-    else if(input == 32 && isOnPlatforms(player, platforms)){
+    else if(input == 32 && isLanded(player, collidables)){
       player.change_y = -JUMP_SPEED;
     }
-    // TODO: Place a platform underneath the playet when pressing 
-    else if(input == 32 && !isOnPlatforms(player, platforms)){
-
+    // Place a platform underneath the player 
+    else if(input == 32 && !isLanded(player, collidables)){
+      if (placePlatform(player.center_x, player.center_y + 64 + 12)) {
+        // TODO: play sound on success
+      }
+      else {
+        // TODO: play sound on failure
+      }
     }
   }
   // Stop left-right movement if no such key is pressed
@@ -121,11 +131,29 @@ void resolveInput() {
     player.change_x = 0;
   }
 }
-// Code for handeling jumping and applying gravity to the player.
-public boolean isOnPlatforms(Sprite s, ArrayList<Sprite>platforms) {
-  s.center_y += 5;
-  ArrayList<Sprite> col_list = checkCollisionList(s, platforms);
-  s.center_y -= 5;
+
+// Attempts to place a platform at the given location
+// Returns true if successful, false if not.
+public boolean placePlatform(float x, float y) {
+  Sprite platform = new Sprite(playerPlatform_img, SPRITE_SCALE, x, y);
+  if (checkCollisionList(platform, collidables).size() > 0) {
+    return false;
+  }
+
+  playerPlatforms.add(platform);
+  collidables.add(platform);
+  return true;
+}
+public void removePlatform(Sprite playerPlatform) {
+  playerPlatforms.remove(playerPlatform);
+  collidables.remove(playerPlatform);
+}
+
+// Checks if `sprite` is directly on top of any items in `platforms`
+public boolean isLanded(Sprite sprite, ArrayList<Sprite>platforms) {
+  sprite.center_y += 5;
+  ArrayList<Sprite> col_list = checkCollisionList(sprite, platforms);
+  sprite.center_y -= 5;
   if(col_list.size() > 0) {
     return true;
   }
@@ -133,11 +161,12 @@ public boolean isOnPlatforms(Sprite s, ArrayList<Sprite>platforms) {
     return false;
   }
 }
+
 public void drawText() {
   textSize(24);
   text("diamonds: " + numDiamonds + "/" + maxDiamonds, view_x + 50, view_y + 50);
   text("isGameOver: " + isGameOver, view_x + 50, view_y + 100); 
-  text("frameNum: " + frameNum, view_x + 50, view_y + 150);
+  text("frameCount: " + frameCount, view_x + 50, view_y + 150);
   
   String iQueue = "";
   for (int input : inputQueue) {
@@ -149,62 +178,75 @@ public void drawText() {
 
 }
 
-public void resolvePlatformCollisions(Sprite s, ArrayList<Sprite> walls) {
-  s.change_y += GRAVITY;
+// Handles movement that should happen per frame, including collisions
+public void progressMovement() {
+  player.change_y += GRAVITY;
+
   // Check the top and bottom of the player
-  s.center_y += s.change_y;
-  ArrayList<Sprite> col_list = checkCollisionList(s, walls);
+  player.center_y += player.change_y;
+  ArrayList<Sprite> col_list = checkCollisionList(player, collidables);
   if (col_list.size() > 0) {
     Sprite collided = col_list.get(0);
+
     // Check if player is colliding with the top of a collision.
-    if (s.change_y > 0) {
-      s.setBottom(collided.getTop());
+    if (player.change_y > 0) {
+      player.setBottom(collided.getTop());
     }
+
     // Check if player is colliding with the bottom of a collision.
-    else if (s.change_y < 0) {
-      s.setTop(collided.getBottom());
+    else if (player.change_y < 0) {
+      player.setTop(collided.getBottom());
     }
-    s.change_y = 0;
-  } 
+    player.change_y = 0;
+  }
+
   // Check the left and right of the player.
-  s.center_x += s.change_x;
-  col_list = checkCollisionList(s, walls);
+  player.center_x += player.change_x;
+  col_list = checkCollisionList(player, collidables);
   if (col_list.size() > 0) {
     Sprite collided = col_list.get(0);
+
     //Check if player is colliding with the right of a collision.
-    if (s.change_x > 0) {
-      s.setRight(collided.getLeft());
+    if (player.change_x > 0) {
+      player.setRight(collided.getLeft());
     }
+
     //Check if player is colliding with the left of a collision.
-    else if (s.change_x < 0) {
-      s.setLeft(collided.getRight());
+    else if (player.change_x < 0) {
+      player.setLeft(collided.getRight());
     }
-  } 
+  }
 }
+
 // Run a simple check for collision to make platforms solid.
 boolean checkCollision(Sprite s1, Sprite s2) {
   return !(s1.getRight() <= s2.getLeft() || s1.getLeft() >= s2.getRight() || s1.getBottom() <= s2.getTop() || s1.getTop() >= s2.getBottom());
 }
+
 // Check the amount of sprites the player is colliding and add them to an ArrayList.
-public ArrayList<Sprite> checkCollisionList(Sprite s, ArrayList<Sprite> list){
+public ArrayList<Sprite> checkCollisionList(Sprite sprite_1, ArrayList<Sprite> list){
   ArrayList<Sprite> collision_list = new ArrayList<Sprite>();
-  for(Sprite p: list){
-    if(checkCollision(s, p)) {
-      collision_list.add(p);
+  for(Sprite sprite_2: list){
+    if(checkCollision(sprite_1, sprite_2)) {
+      collision_list.add(sprite_2);
     }
   }
   return collision_list;
 }
-// Display platforms.
+
+// Display sprites
 void display() {
-  for(Sprite s: platforms) {
-    s.display();
+  for (Sprite sprite : platforms) {
+    sprite.display();
   }
-    //Display diamonds.
-    for(Sprite diamond: diamonds) {
+  for (Sprite diamond : diamonds) {
     diamond.display();
   }
+  for (Sprite playerPlatform : playerPlatforms) {
+    playerPlatform.display();
+  }
 }
+
 // Script for collecting diamonds.
 void collectDiamond() {
   ArrayList<Sprite> diamond_collision_list = checkCollisionList(player, diamonds);
@@ -218,11 +260,14 @@ void collectDiamond() {
     levelComplete();
   }
 }
+
 // Load a level
 void loadLevel(int levelNum) {
   // Clear level
   platforms.clear();
   diamonds.clear();
+  playerPlatforms.clear();
+  collidables.clear();
   numDiamonds = 0;
   maxDiamonds = 0;
 
@@ -239,17 +284,19 @@ void loadLevel(int levelNum) {
     for(int col = 0; col < values.length; col++){
       //Create ground depending on the position of the letter 1.
       if(values[col].equals("1")){
-        Sprite s = new Sprite(square_img, SPRITE_SCALE);
-        s.center_x = SPRITE_SIZE/2 + col * SPRITE_SIZE;
-        s.center_y = SPRITE_SIZE/2 + row * SPRITE_SIZE;
-        platforms.add(s);
-      }   
+        Sprite sprite = new Sprite(square_img, SPRITE_SCALE);
+        sprite.center_x = SPRITE_SIZE/2 + col * SPRITE_SIZE;
+        sprite.center_y = SPRITE_SIZE/2 + row * SPRITE_SIZE;
+        platforms.add(sprite);
+        collidables.add(sprite);
+      }
+
       //Create diamonds depending on the position of the letter 2.
       else if(values[col].equals("2")){
-        Sprite s = new Sprite(diamond_img, SPRITE_SCALE);
-        s.center_x = SPRITE_SIZE/2 + col * SPRITE_SIZE;
-        s.center_y = SPRITE_SIZE/2 + row * SPRITE_SIZE;
-        diamonds.add(s);
+        Sprite sprite = new Sprite(diamond_img, SPRITE_SCALE);
+        sprite.center_x = SPRITE_SIZE/2 + col * SPRITE_SIZE;
+        sprite.center_y = SPRITE_SIZE/2 + row * SPRITE_SIZE;
+        diamonds.add(sprite);
         maxDiamonds++;
       }
     }
