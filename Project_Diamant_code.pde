@@ -36,6 +36,8 @@ int maxPlayerPlatformAmount = 3;
 int numDiamonds = 0;
 // Int to count the amount of diamonds in the game.
 int maxDiamonds = 0;
+// Tracks whether the current spacebar press has done something
+boolean isSpacebarActionable = true;
 // Display if the player can still play the game or not.  
 boolean isGameOver = false;
 // Float to point to the origin of the game (0,0) (Top left)
@@ -68,7 +70,6 @@ void setup() {
 // Logic that should run every frame 
 void draw() {
   // Calculations before display
-  frameCount++;
   resolveInput();
   collectDiamond();
   progressMovement();
@@ -91,10 +92,15 @@ void keyPressed() {
       return;
     }
   }
+
   inputQueue.add(0, keyCode);
 }
 // Logic that runs every key release
 void keyReleased() {
+  if (keyCode == 32) {
+    isSpacebarActionable = true;
+  }
+
   inputQueue.remove((Integer) keyCode);
 }
 
@@ -114,13 +120,18 @@ void resolveInput() {
       player.change_x = -MOVE_SPEED;
       canMoveLR = false;
     }
-    // Jump (spacebar)
-    else if(input == 32 && isLanded(player, collidables)){
-      player.change_y = -JUMP_SPEED;
-    }
-    // Place a platform underneath the player 
-    else if(input == 32 && !isLanded(player, collidables)){
-      if (placePlatform(player.center_x, player.center_y + 64 + 12)) {
+    // Spacebar (only count first press if not yet released)
+    else if (isSpacebarActionable && input == 32) {
+      boolean isLanded = isLanded(player, collidables);
+
+      // On ground; jump
+      if (isLanded) {
+        isSpacebarActionable = false;
+        player.change_y = -JUMP_SPEED;
+      }
+      // In air, attempt to place platform
+      else if (placePlatform(player.center_x, player.center_y + 64 + 12)) {
+        isSpacebarActionable = false;
         // TODO: play sound on success
       }
       else {
@@ -185,7 +196,7 @@ public void drawText() {
   };
 
   for (int i = 0; i < textToDisplay.length; i++) {
-    text(textToDisplay[i], view_x + LEFT_MARGIN, view_y + VERTICAL_MARGIN + 50*i);
+    text(textToDisplay[i], view_x + LEFT_MARGIN, view_y + VERTICAL_MARGIN + 28*i);
   }
 
   fill(0, 408, 612);
