@@ -128,6 +128,24 @@ public void keyReleased() {
   inputQueue.remove((Integer) keyCode);
 }
 
+// Logic that runs every mouse press
+public void mousePressed() {
+  // Left mouse button
+  if (mouseButton == 37) {
+    placePlatform(mouseX, mouseY);
+  }
+
+  // Right mouse button
+  if (mouseButton == 39) {
+    for (Sprite platform : playerPlatforms) {
+      if (mouseX > platform.getLeft() && mouseX < platform.getRight() && mouseY > platform.getTop() && mouseY < platform.getBottom()) {
+        playerPlatforms.remove(platform);
+        break;
+      }
+    }
+  }
+}
+
 //// UTILITY FUNCTIONS ////
 // Perform actions based on currently pressed keys
 public void resolveInput() {
@@ -156,10 +174,6 @@ public void resolveInput() {
       // In air, attempt to place platform
       else if (placePlatform(player.center_x, player.center_y + 64 + 12)) {
         isSpacebarActionable = false;
-        // TODO: play sound on success
-      }
-      else {
-        // TODO: play sound on failure
       }
     }
   }
@@ -172,17 +186,15 @@ public void resolveInput() {
 // Attempts to place a platform at the given location
 // Returns true if successful, false if not.
 public boolean placePlatform(float x, float y) {
-  if (playerPlatforms.size() >= maxPlayerPlatformAmount) {
-    return false;
-  }
-
   Sprite platform = new Sprite(playerPlatform_img, SPRITE_SCALE, x, y);
-  if (checkCollisionList(platform, collidables).size() > 0) {
+  if (playerPlatforms.size() >= maxPlayerPlatformAmount || checkCollisionList(platform, collidables).size() > 0) {
+    // TODO: play sound on failure
     return false;
   }
 
   playerPlatforms.add(platform);
   collidables.add(platform);
+  // TODO: play sound on success
   return true;
 }
 public void removePlatform(Sprite playerPlatform) {
@@ -295,7 +307,7 @@ public void drawSprites() {
   for (Sprite playerPlatform : playerPlatforms) {
     playerPlatform.display(0, 0);
   }
-  player.display(120, 0);
+  player.display(0, 0);
 }
 
 // Script for collecting diamonds.
