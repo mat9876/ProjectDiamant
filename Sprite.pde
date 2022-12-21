@@ -33,8 +33,8 @@ public class Sprite{
     change_x = 0;
     change_y = 0;
   }
-  public void display(){
-     image(image, center_x, center_y, w, h); 
+  public void display(float offset_x, float offset_y){
+     image(image, center_x + offset_x, center_y + offset_y, w, h); 
   }
   public void update(){
      center_x += change_x;

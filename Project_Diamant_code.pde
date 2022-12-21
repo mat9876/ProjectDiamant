@@ -4,17 +4,19 @@ final static int TARGET_DISPLAY_WIDTH = 1920;
 final static int TARGET_DISPLAY_HEIGHT = 1080;
 final static int TARGET_FRAMERATE = 60;
 
-// Alignment
+// Alignment / Scaling
 final static float RIGHT_MARGIN = 400;
 final static float LEFT_MARGIN = 60;
 final static float VERTICAL_MARGIN = 40;
+final static float SPRITE_SCALE = 50.0/128;
+final static float SPRITE_SIZE = 50;
+final static float BASE_OFFSET_X = 0;
+final static float BASE_OFFSET_Y = 0;
 
 // Intengers for the player character
 final static float MOVE_SPEED = 6;
-final static float SPRITE_SCALE = 50.0/128;
-final static float SPRITE_SIZE = 50;
-final static float GRAVITY = 0.6;
-final static float JUMP_SPEED = 10;
+final static float GRAVITY = 0.8;
+final static float JUMP_SPEED = 12;
 final static int DEFAULT_PLAYER_X = 200;
 final static int DEFAULT_PLAYER_Y = 900;
 
@@ -47,6 +49,12 @@ int maxDiamonds = 0;
 boolean isSpacebarActionable = true;
 // Display if the player can still play the game or not.  
 boolean isGameOver = false;
+// Keep track of level size in screen pixels
+float levelSize_x = TARGET_DISPLAY_WIDTH;
+float levelSize_y = TARGET_DISPLAY_HEIGHT;
+// Offsets for the viewport
+float offset_x = BASE_OFFSET_X;
+float offset_y = BASE_OFFSET_Y;
 // Float to point to the origin of the viewport (0,0) (Top left)
 float view_x = 0;
 float view_y = 0;
@@ -93,8 +101,7 @@ public void draw() {
   
   // Display stuff
   background(backgroundColor);
-  player.display();
-  display();
+  drawSprites();
   drawDebugText();
 
   // Calculations after display
@@ -208,6 +215,7 @@ public void drawDebugText() {
     "Diamonds: " + numDiamonds + "/" + maxDiamonds,
     "Platforms: " + playerPlatforms.size() + "/" + maxPlayerPlatformAmount,
     "isGameOver: " + isGameOver,
+    String.format("Level Dimensions: %.0f x %.0f", levelSize_x, levelSize_y),
     String.format("Speed: %01.1f (%02dfps)", frameRate/TARGET_FRAMERATE, round(frameRate)),
     "frameCount: " + frameCount,
     "inputQueue: " + iQueue,
@@ -277,16 +285,17 @@ public ArrayList<Sprite> checkCollisionList(Sprite sprite_1, ArrayList<Sprite> l
 }
 
 // Display sprites
-public void display() {
+public void drawSprites() {
   for (Sprite sprite : platforms) {
-    sprite.display();
+    sprite.display(0, 0);
   }
   for (Sprite diamond : diamonds) {
-    diamond.display();
+    diamond.display(0, 0);
   }
   for (Sprite playerPlatform : playerPlatforms) {
-    playerPlatform.display();
+    playerPlatform.display(0, 0);
   }
+  player.display(120, 0);
 }
 
 // Script for collecting diamonds.
@@ -305,11 +314,18 @@ public void collectDiamond() {
 
 // Load a level
 public void loadLevel(int levelNum) {
+  int maxRowLen = 0;
+
   unloadLevel();
+
   // Create platforms on canvas for players
   String[] lines = loadStrings(String.format("map_%02d.csv", levelNum));
   for(int row = 0; row < lines.length; row++){
     String[] values = split(lines[row], ",");
+    if (values.length > maxRowLen) {
+      maxRowLen = values.length;
+    }
+
     for(int col = 0; col < values.length; col++){
       //Create ground depending on the position of the letter 1.
       if(values[col].equals("1")){
@@ -330,6 +346,9 @@ public void loadLevel(int levelNum) {
       }
     }
   }
+
+  levelSize_x = maxRowLen;
+  levelSize_y = lines.length;
 }
 
 public void unloadLevel() {
