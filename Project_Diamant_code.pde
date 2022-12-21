@@ -144,7 +144,7 @@ public void mousePressed() {
   if (mouseButton == 39) {
     for (Sprite platform : playerPlatforms) {
       if (mouseX > platform.getLeft() && mouseX < platform.getRight() && mouseY > platform.getTop() && mouseY < platform.getBottom()) {
-        playerPlatforms.remove(platform);
+        removePlatform(platform);
         break;
       }
     }
@@ -232,6 +232,7 @@ public void drawDebugText() {
     "Diamonds: " + numDiamonds + "/" + maxDiamonds,
     "Platforms: " + playerPlatforms.size() + "/" + maxPlayerPlatformAmount,
     "isGameOver: " + isGameOver,
+    "Collidables: " + collidables.size(),
     String.format("Level Dimensions: %d x %d (%d x %d)",levelSizePx_x, levelSizePx_y, levelSize_x, levelSize_y),
     "Viewport offset: " + offset_x + ", " + offset_y,
     String.format("Speed: %01.1f (%02dfps)", frameRate/TARGET_FRAMERATE, round(frameRate)),
