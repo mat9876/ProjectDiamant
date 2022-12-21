@@ -10,8 +10,8 @@ final static float LEFT_MARGIN = 60;
 final static float VERTICAL_MARGIN = 40;
 final static float SPRITE_SCALE = 50.0/128;
 final static float SPRITE_SIZE = 50;
-final static float BASE_OFFSET_X = 0;
-final static float BASE_OFFSET_Y = 0;
+final static int BASE_OFFSET_X = -15;
+final static int BASE_OFFSET_Y = -10;
 
 // Intengers for the player character
 final static float MOVE_SPEED = 6;
@@ -49,12 +49,15 @@ int maxDiamonds = 0;
 boolean isSpacebarActionable = true;
 // Display if the player can still play the game or not.  
 boolean isGameOver = false;
-// Keep track of level size in screen pixels
-float levelSize_x = TARGET_DISPLAY_WIDTH;
-float levelSize_y = TARGET_DISPLAY_HEIGHT;
+// Keep track of level size
+int levelSize_x = 0;
+int levelSize_y = 0;
+int levelSizePx_x = TARGET_DISPLAY_WIDTH;
+int levelSizePx_y = TARGET_DISPLAY_HEIGHT;
+boolean enableScrolling = false;
 // Offsets for the viewport
-float offset_x = BASE_OFFSET_X;
-float offset_y = BASE_OFFSET_Y;
+int offset_x = BASE_OFFSET_X;
+int offset_y = BASE_OFFSET_Y;
 // Float to point to the origin of the viewport (0,0) (Top left)
 float view_x = 0;
 float view_y = 0;
@@ -66,6 +69,7 @@ color backgroundColor = color(55,44,44);
 public void settings() {
   // Open in windowed mode if screen is larger than display, fullscreen if not.
   if (displayWidth > TARGET_DISPLAY_WIDTH || displayHeight > TARGET_DISPLAY_HEIGHT) {
+    //size(1280, 1080);
     size(TARGET_DISPLAY_WIDTH, TARGET_DISPLAY_HEIGHT);
   }
   else {
@@ -98,6 +102,7 @@ public void draw() {
   resolveInput();
   collectDiamond();
   progressMovement();
+  calculateOffset();
   
   // Display stuff
   background(backgroundColor);
@@ -227,7 +232,8 @@ public void drawDebugText() {
     "Diamonds: " + numDiamonds + "/" + maxDiamonds,
     "Platforms: " + playerPlatforms.size() + "/" + maxPlayerPlatformAmount,
     "isGameOver: " + isGameOver,
-    String.format("Level Dimensions: %.0f x %.0f", levelSize_x, levelSize_y),
+    String.format("Level Dimensions: %d x %d (%d x %d)",levelSizePx_x, levelSizePx_y, levelSize_x, levelSize_y),
+    "Viewport offset: " + offset_x + ", " + offset_y,
     String.format("Speed: %01.1f (%02dfps)", frameRate/TARGET_FRAMERATE, round(frameRate)),
     "frameCount: " + frameCount,
     "inputQueue: " + iQueue,
@@ -299,15 +305,15 @@ public ArrayList<Sprite> checkCollisionList(Sprite sprite_1, ArrayList<Sprite> l
 // Display sprites
 public void drawSprites() {
   for (Sprite sprite : platforms) {
-    sprite.display(0, 0);
+    sprite.display(offset_x, offset_y);
   }
   for (Sprite diamond : diamonds) {
-    diamond.display(0, 0);
+    diamond.display(offset_x, offset_y);
   }
   for (Sprite playerPlatform : playerPlatforms) {
-    playerPlatform.display(0, 0);
+    playerPlatform.display(offset_x, offset_y);
   }
-  player.display(0, 0);
+  player.display(offset_x, offset_y);
 }
 
 // Script for collecting diamonds.
@@ -359,8 +365,14 @@ public void loadLevel(int levelNum) {
     }
   }
 
+  // Determine level size
   levelSize_x = maxRowLen;
   levelSize_y = lines.length;
+  levelSizePx_x = levelSize_x * 50 + BASE_OFFSET_X*2;
+  levelSizePx_y = levelSize_y * 50 + BASE_OFFSET_Y*2;
+
+  // Determine whether to enable level scrolling
+  enableScrolling = pixelWidth <= levelSizePx_x && pixelHeight <= levelSizePx_y;
 }
 
 public void unloadLevel() {
@@ -383,4 +395,39 @@ public void unloadLevel() {
 public void levelComplete() {
   levelNum++;
   loadLevel(levelNum);
+}
+
+// Calculate viewport offset for level scrolling
+public void calculateOffset() {
+  // Do nothing if we don't need to scroll
+  if (!enableScrolling) {
+    return;
+  }
+
+  // Define the size of the zones (from edges of viewport) in which the level will scroll
+  float shiftZone_x = pixelWidth / 3;
+  float shiftZone_y = pixelWidth / 3;
+
+  // Scroll left
+  if (player.center_x - offset_x < shiftZone_x) {
+    offset_x = (int) round(player.center_x + shiftZone_x - pixelWidth);
+  }
+  // Scroll right
+  else if (player.center_x - offset_x > pixelWidth - shiftZone_x) {
+    offset_x = (int) round(player.center_x + shiftZone_x);
+  }
+
+  // Clamp to prevent scrolling off-level
+  if (offset_x < 0) {
+    offset_x = 0;
+  }
+  else if (offset_x + pixelWidth > levelSizePx_x) {
+    offset_x = pixelWidth - levelSizePx_x;
+  }
+  if (offset_y < 0) {
+    offset_y = 0;
+  }
+  else if (offset_y + pixelHeight > levelSizePx_y) {
+    offset_y = pixelHeight - levelSizePx_y;
+  }
 }
