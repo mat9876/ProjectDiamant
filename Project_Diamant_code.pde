@@ -10,8 +10,8 @@ final static float LEFT_MARGIN = 60;
 final static float VERTICAL_MARGIN = 40;
 final static float SPRITE_SCALE = 50.0/128;
 final static float SPRITE_SIZE = 50;
-final static float BASE_OFFSET_X = -15;
-final static float BASE_OFFSET_Y = -10;
+final static float BASE_OFFSET_X = 15;
+final static float BASE_OFFSET_Y = 10;
 
 // Intengers for the player character
 final static float MOVE_SPEED = 6;
@@ -381,8 +381,8 @@ public void loadLevel(int levelNum) {
   // Determine level size
   levelSize_x = maxRowLen;
   levelSize_y = lines.length;
-  levelSizePx_x = levelSize_x * 50 + (int)round(BASE_OFFSET_X*2);
-  levelSizePx_y = levelSize_y * 50 + (int)round(BASE_OFFSET_Y*2);
+  levelSizePx_x = levelSize_x * 50 - (int)round(BASE_OFFSET_X*2);
+  levelSizePx_y = levelSize_y * 50 - (int)round(BASE_OFFSET_Y*2);
 
   // Determine whether to enable level scrolling
   enableScrollingX = pixelWidth < levelSizePx_x;
