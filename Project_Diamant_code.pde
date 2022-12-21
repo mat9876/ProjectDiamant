@@ -10,15 +10,15 @@ final static float LEFT_MARGIN = 60;
 final static float VERTICAL_MARGIN = 40;
 final static float SPRITE_SCALE = 50.0/128;
 final static float SPRITE_SIZE = 50;
-final static int BASE_OFFSET_X = -15;
-final static int BASE_OFFSET_Y = -10;
+final static float BASE_OFFSET_X = -15;
+final static float BASE_OFFSET_Y = -10;
 
 // Intengers for the player character
 final static float MOVE_SPEED = 6;
 final static float GRAVITY = 0.8;
 final static float JUMP_SPEED = 12;
-final static int DEFAULT_PLAYER_X = 200;
-final static int DEFAULT_PLAYER_Y = 900;
+final static float DEFAULT_PLAYER_X = 200;
+final static float DEFAULT_PLAYER_Y = 900;
 
 //// GLOBAL VARIABLES ////
 // Arraylist of platforms that appear in the game.
@@ -54,10 +54,14 @@ int levelSize_x = 0;
 int levelSize_y = 0;
 int levelSizePx_x = TARGET_DISPLAY_WIDTH;
 int levelSizePx_y = TARGET_DISPLAY_HEIGHT;
-boolean enableScrolling = false;
+// Define the size of the zones (from edges of viewport) in which the level will scroll
+float shiftZone_x;
+float shiftZone_y;
 // Offsets for the viewport
-int offset_x = BASE_OFFSET_X;
-int offset_y = BASE_OFFSET_Y;
+float offset_x = BASE_OFFSET_X;
+float offset_y = BASE_OFFSET_Y;
+boolean enableScrollingX = false;
+boolean enableScrollingY = false;
 // Float to point to the origin of the viewport (0,0) (Top left)
 float view_x = 0;
 float view_y = 0;
@@ -69,8 +73,8 @@ color backgroundColor = color(55,44,44);
 public void settings() {
   // Open in windowed mode if screen is larger than display, fullscreen if not.
   if (displayWidth > TARGET_DISPLAY_WIDTH || displayHeight > TARGET_DISPLAY_HEIGHT) {
-    //size(1280, 1080);
-    size(TARGET_DISPLAY_WIDTH, TARGET_DISPLAY_HEIGHT);
+    size(1280, 720);
+    //size(TARGET_DISPLAY_WIDTH, TARGET_DISPLAY_HEIGHT);
   }
   else {
     fullScreen();
@@ -81,6 +85,10 @@ public void settings() {
 public void setup() {
   frameRate(TARGET_FRAMERATE);
   imageMode(CENTER);
+
+  // Determine viewport shift bounds
+  shiftZone_x = pixelWidth / 3;
+  shiftZone_y = pixelHeight / 3;
 
   // Spawn the player in game on the given x- and y-cordinates.
   player = new Sprite("YSquare.png", 1.0, DEFAULT_PLAYER_X, DEFAULT_PLAYER_Y);
@@ -135,15 +143,18 @@ public void keyReleased() {
 
 // Logic that runs every mouse press
 public void mousePressed() {
+  float realMouseX = mouseX + offset_x;
+  float realMouseY = mouseY + offset_y;
+
   // Left mouse button
   if (mouseButton == 37) {
-    placePlatform(mouseX, mouseY);
+    placePlatform(realMouseX, realMouseY);
   }
 
   // Right mouse button
   if (mouseButton == 39) {
     for (Sprite platform : playerPlatforms) {
-      if (mouseX > platform.getLeft() && mouseX < platform.getRight() && mouseY > platform.getTop() && mouseY < platform.getBottom()) {
+      if (realMouseX > platform.getLeft() && realMouseX < platform.getRight() && realMouseY > platform.getTop() && realMouseY < platform.getBottom()) {
         removePlatform(platform);
         break;
       }
@@ -233,6 +244,7 @@ public void drawDebugText() {
     "Platforms: " + playerPlatforms.size() + "/" + maxPlayerPlatformAmount,
     "isGameOver: " + isGameOver,
     "Collidables: " + collidables.size(),
+    String.format("Player location: %.1f; %.1f", player.center_x, player.center_y),
     String.format("Level Dimensions: %d x %d (%d x %d)",levelSizePx_x, levelSizePx_y, levelSize_x, levelSize_y),
     "Viewport offset: " + offset_x + ", " + offset_y,
     String.format("Speed: %01.1f (%02dfps)", frameRate/TARGET_FRAMERATE, round(frameRate)),
@@ -306,15 +318,15 @@ public ArrayList<Sprite> checkCollisionList(Sprite sprite_1, ArrayList<Sprite> l
 // Display sprites
 public void drawSprites() {
   for (Sprite sprite : platforms) {
-    sprite.display(offset_x, offset_y);
+    sprite.display(-offset_x, -offset_y);
   }
   for (Sprite diamond : diamonds) {
-    diamond.display(offset_x, offset_y);
+    diamond.display(-offset_x, -offset_y);
   }
   for (Sprite playerPlatform : playerPlatforms) {
-    playerPlatform.display(offset_x, offset_y);
+    playerPlatform.display(-offset_x, -offset_y);
   }
-  player.display(offset_x, offset_y);
+  player.display(-offset_x, -offset_y);
 }
 
 // Script for collecting diamonds.
@@ -369,11 +381,12 @@ public void loadLevel(int levelNum) {
   // Determine level size
   levelSize_x = maxRowLen;
   levelSize_y = lines.length;
-  levelSizePx_x = levelSize_x * 50 + BASE_OFFSET_X*2;
-  levelSizePx_y = levelSize_y * 50 + BASE_OFFSET_Y*2;
+  levelSizePx_x = levelSize_x * 50 + (int)round(BASE_OFFSET_X*2);
+  levelSizePx_y = levelSize_y * 50 + (int)round(BASE_OFFSET_Y*2);
 
   // Determine whether to enable level scrolling
-  enableScrolling = pixelWidth <= levelSizePx_x && pixelHeight <= levelSizePx_y;
+  enableScrollingX = pixelWidth < levelSizePx_x;
+  enableScrollingY = pixelHeight < levelSizePx_y;
 }
 
 public void unloadLevel() {
@@ -400,35 +413,41 @@ public void levelComplete() {
 
 // Calculate viewport offset for level scrolling
 public void calculateOffset() {
-  // Do nothing if we don't need to scroll
-  if (!enableScrolling) {
-    return;
+  // Scroll horizontally
+  if (enableScrollingX) {
+    // Scroll left
+    if (player.center_x - offset_x < shiftZone_x) {
+      offset_x = player.center_x - shiftZone_x;
+      if (offset_x < 0) {
+        offset_x = 0;
+      }
+    }
+    
+    // Scroll right
+    else if (player.center_x - offset_x > pixelWidth - shiftZone_x) {
+      offset_x = player.center_x + shiftZone_x - pixelWidth;
+      if (offset_x + pixelWidth > levelSizePx_x) {
+        offset_x = levelSizePx_x - pixelWidth;
+      }
+    }
   }
 
-  // Define the size of the zones (from edges of viewport) in which the level will scroll
-  float shiftZone_x = pixelWidth / 3;
-  float shiftZone_y = pixelWidth / 3;
-
-  // Scroll left
-  if (player.center_x - offset_x < shiftZone_x) {
-    offset_x = (int) round(player.center_x + shiftZone_x - pixelWidth);
-  }
-  // Scroll right
-  else if (player.center_x - offset_x > pixelWidth - shiftZone_x) {
-    offset_x = (int) round(player.center_x + shiftZone_x);
-  }
-
-  // Clamp to prevent scrolling off-level
-  if (offset_x < 0) {
-    offset_x = 0;
-  }
-  else if (offset_x + pixelWidth > levelSizePx_x) {
-    offset_x = pixelWidth - levelSizePx_x;
-  }
-  if (offset_y < 0) {
-    offset_y = 0;
-  }
-  else if (offset_y + pixelHeight > levelSizePx_y) {
-    offset_y = pixelHeight - levelSizePx_y;
+  // Scroll vertically
+  if (enableScrollingY) {
+    // Scroll up
+    if (player.center_y - offset_y < shiftZone_y) {
+      offset_y = player.center_y - shiftZone_y;
+      if (offset_y < 0) {
+        offset_y = 0;
+      }
+    }
+    
+    // Scroll down
+    else if (player.center_y - offset_y > pixelHeight - shiftZone_y) {
+      offset_y = player.center_y + shiftZone_y - pixelHeight;
+      if (offset_y + pixelHeight > levelSizePx_y) {
+        offset_y = levelSizePx_y - pixelHeight;
+      }
+    }
   }
 }
