@@ -73,8 +73,8 @@ color backgroundColor = color(55,44,44);
 public void settings() {
   // Open in windowed mode if screen is larger than display, fullscreen if not.
   if (displayWidth > TARGET_DISPLAY_WIDTH || displayHeight > TARGET_DISPLAY_HEIGHT) {
-    size(1280, 720);
-    //size(TARGET_DISPLAY_WIDTH, TARGET_DISPLAY_HEIGHT);
+    //size(1280, 720);
+    size(TARGET_DISPLAY_WIDTH, TARGET_DISPLAY_HEIGHT);
   }
   else {
     fullScreen();
