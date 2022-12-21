@@ -21,6 +21,8 @@ final static float DEFAULT_PLAYER_X = 200;
 final static float DEFAULT_PLAYER_Y = 900;
 
 //// GLOBAL VARIABLES ////
+// Indicator on whether or not a map is loaded
+boolean noMap = false;
 // Arraylist of platforms that appear in the game.
 ArrayList<Sprite> platforms = new ArrayList<>();
 ArrayList<Sprite> diamonds = new ArrayList<>();
@@ -62,9 +64,6 @@ float offset_x = BASE_OFFSET_X;
 float offset_y = BASE_OFFSET_Y;
 boolean enableScrollingX = false;
 boolean enableScrollingY = false;
-// Float to point to the origin of the viewport (0,0) (Top left)
-float view_x = 0;
-float view_y = 0;
 // Background Color
 color backgroundColor = color(55,44,44);
 
@@ -106,6 +105,14 @@ public void setup() {
 
 // Logic that should run every frame 
 public void draw() {
+  // Stop if there's no map loaded
+  if (noMap) {
+    noLoop();
+    background(backgroundColor);
+    text(String.format("\"map_%02d.csv\" could not be loaded.", levelNum), LEFT_MARGIN, VERTICAL_MARGIN);
+    return;
+  }
+
   // Calculations before display
   resolveInput();
   collectDiamond();
@@ -253,7 +260,7 @@ public void drawDebugText() {
   };
 
   for (int i = 0; i < textToDisplay.length; i++) {
-    text(textToDisplay[i], view_x + LEFT_MARGIN, view_y + VERTICAL_MARGIN + 28*i);
+    text(textToDisplay[i], LEFT_MARGIN, VERTICAL_MARGIN + 28*i);
   }
 
   fill(0, 408, 612);
@@ -349,8 +356,16 @@ public void loadLevel(int levelNum) {
 
   unloadLevel();
 
-  // Create platforms on canvas for players
+  // Load map file into memory
   String[] lines = loadStrings(String.format("map_%02d.csv", levelNum));
+
+  // Prevent loading if the file couldn't be read
+  if (lines == null) {
+    noMap = true;
+    return;
+  }
+
+  // Create platforms on canvas for players
   for(int row = 0; row < lines.length; row++){
     String[] values = split(lines[row], ",");
     if (values.length > maxRowLen) {
