@@ -210,7 +210,7 @@ public void resolveInput() {
 // Returns true if successful, false if not.
 public boolean placePlatform(float x, float y) {
   Sprite platform = new Sprite(playerPlatform_img, SPRITE_SCALE, x, y);
-  if (playerPlatforms.size() >= maxPlayerPlatformAmount || checkCollisionList(platform, collidables).size() > 0) {
+  if (playerPlatforms.size() >= maxPlayerPlatformAmount || checkCollision(player, platform) || checkCollisionList(platform, collidables).size() > 0) {
     // TODO: play sound on failure
     return false;
   }
