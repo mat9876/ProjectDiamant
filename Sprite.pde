@@ -1,9 +1,9 @@
-public class Sprite{
+public class Sprite {
   PImage image;
   float center_x, center_y;
   float change_x, change_y;
   float w, h;
-  public Sprite(String filename, float scale, float x, float y){
+  public Sprite(String filename, float scale, float x, float y) {
     image = loadImage(filename);
     w = image.width * scale;
     h = image.height * scale;
@@ -12,10 +12,10 @@ public class Sprite{
     change_x = 0;
     change_y = 0;
   }
-  public Sprite(String filename, float scale){
+  public Sprite(String filename, float scale) {
     this(filename, scale, 0, 0);
   }
-  public Sprite(PImage img, float scale){
+  public Sprite(PImage img, float scale) {
     image = img;
     w = image.width * scale;
     h = image.height * scale;
@@ -24,7 +24,7 @@ public class Sprite{
     change_x = 0;
     change_y = 0;
   }
-  public Sprite(PImage img, float scale, float x, float y){
+  public Sprite(PImage img, float scale, float x, float y) {
     image = img;
     w = image.width * scale;
     h = image.height * scale;
@@ -33,36 +33,36 @@ public class Sprite{
     change_x = 0;
     change_y = 0;
   }
-  public void display(float offset_x, float offset_y){
-     image(image, center_x + offset_x, center_y + offset_y, w, h); 
+  public void display(float offset_x, float offset_y) {
+    image(image, center_x + offset_x, center_y + offset_y, w, h); 
   }
-  public void update(){
-     center_x += change_x;
-     center_y += change_y;
+  public void update() {
+    center_x += change_x;
+    center_y += change_y;
   }
   
-  void setLeft(float left){
+  void setLeft(float left) {
     center_x = left + w/2;
   }
-  float getLeft(){
+  float getLeft() {
     return center_x - w/2;
   }
-  void setRight(float right){
+  void setRight(float right) {
     center_x = right - w/2;
   }
-  float getRight(){
+  float getRight() {
     return center_x + w/2;
   }
-  void setTop(float top){
+  void setTop(float top) {
     center_y = top + h/2;
   }
-  float getTop(){
+  float getTop() {
     return center_y - h/2;
   }
-  void setBottom(float bottom){
+  void setBottom(float bottom) {
     center_y = bottom - h/2;
   }
-  float getBottom(){
+  float getBottom() {
     return center_y + h/2;
   }
 }

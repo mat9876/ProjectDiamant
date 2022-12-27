@@ -1,29 +1,20 @@
 public class Player extends AnimatedSprite{
   boolean onPlatform, inPlace;
-  PImage[] standLeft;
-  PImage[] standRight;
-  PImage[] jumpLeft;
-  PImage[] jumpRight;
+  PImage[] stand;
+  PImage[] jump;
   public Player(PImage img, float scale) {
     super(img, scale);
     direction = RIGHT_FACING;
     onPlatform = true;
     inPlace = true;
-    standLeft = new PImage[1];
-    standLeft[0] = loadImage("YSquare_left.png");
-    standRight = new PImage[1];
-    standRight[0] = loadImage("YSquare.png");
-    moveLeft = new PImage[2];
-    moveLeft[0] = loadImage("YSquare_1_left.png");
-    moveLeft[1] = loadImage("YSquare_2_left.png");
-    moveRight = new PImage[2];
-    moveRight[0] = loadImage("YSquare_1.png");
-    moveRight[1] = loadImage("YSquare_2.png"); 
-    jumpRight = new PImage[1];
-    jumpRight[0] = loadImage("YSquare_Jump.png");
-    jumpLeft = new PImage[1];
-    jumpLeft[0] = loadImage("YSquare_Jump_left.png");
-    currentImages = standRight;
+    stand = new PImage[1];
+    stand[0] = loadImage("YSquare.png");
+    move = new PImage[2];
+    move[0] = loadImage("YSquare_1.png");
+    move[1] = loadImage("YSquare_2.png"); 
+    jump = new PImage[1];
+    jump[0] = loadImage("YSquare_Jump.png");
+    currentImages = stand;
   }
 
   @Override
@@ -45,28 +36,14 @@ public class Player extends AnimatedSprite{
 
   @Override
   public void selectCurrentImages() {
-  
-    if(direction == RIGHT_FACING) {
-      if(inPlace){
-        currentImages = standRight;
-      }
-      else if(!onPlatform){
-        currentImages = jumpRight;
-      }
-      else {
-        currentImages = moveRight;
-      }  
+    if(inPlace) {
+      currentImages = stand;
     }
-    else if(direction == LEFT_FACING) {
-      if(inPlace) {
-        currentImages = standLeft;
-      }
-      else if(!onPlatform) {
-        currentImages = jumpLeft;
-      }
-      else {
-        currentImages = moveLeft;
-      }
-    }  
+    else if(!onPlatform) {
+      currentImages = jump;
+    }
+    else {
+      currentImages = move;
+    }
   }
 }

@@ -73,8 +73,6 @@ boolean enableScrollingY = false;
 // Background Color
 color backgroundColor = color(55,44,44);
 
-int direction;
-
 //// PROCESSING EVENTS ////
 // Logic that should run at start-up but cannot be run in `setup()`
 public void settings() {
@@ -265,7 +263,7 @@ public void drawDebugText() {
     "frameCount: " + frameCount,
     "inputQueue: " + iQueue,
     "Animation debug:",
-    "Direction: " + direction,
+    "Direction: " + player.direction,
     "Change_X:" + player.change_x,
   };
 
