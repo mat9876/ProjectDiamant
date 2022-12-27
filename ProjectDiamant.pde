@@ -1,8 +1,14 @@
 //// GLOBAL DEFINITIONS ////
-// Display
+// Integers for displaying the amount of pixels during testing fase(Delete in the final version).
 final static int TARGET_DISPLAY_WIDTH = 1920;
 final static int TARGET_DISPLAY_HEIGHT = 1080;
+// Integers for displaying the amount of frames per second during testing fase(Delete in the final version).
 final static int TARGET_FRAMERATE = 60;
+
+// Integers for calculating the positions of the player character to use during animation
+final static int NEUTRAL_FACING = 0;
+final static int RIGHT_FACING = 1;
+final static int LEFT_FACING = 2;
 
 // Alignment / Scaling
 final static float RIGHT_MARGIN = 400;
@@ -67,6 +73,8 @@ boolean enableScrollingY = false;
 // Background Color
 color backgroundColor = color(55,44,44);
 
+int direction;
+
 //// PROCESSING EVENTS ////
 // Logic that should run at start-up but cannot be run in `setup()`
 public void settings() {
@@ -90,7 +98,7 @@ public void setup() {
   shiftZone_y = pixelHeight / 3;
 
   // Spawn the player in game on the given x- and y-cordinates.
-  player = new Sprite("YSquare.png", 1.0, DEFAULT_PLAYER_X, DEFAULT_PLAYER_Y);
+  player = new Sprite("YSquare.png", 3.0, DEFAULT_PLAYER_X, DEFAULT_PLAYER_Y);
   player.change_x = 0;
   player.change_y = 0;
 
@@ -257,6 +265,9 @@ public void drawDebugText() {
     String.format("Speed: %01.1f (%02dfps)", frameRate/TARGET_FRAMERATE, round(frameRate)),
     "frameCount: " + frameCount,
     "inputQueue: " + iQueue,
+    "Animation debug:",
+    "Direction: " + direction,
+    "Change_X:" + player.change_x,
   };
 
   for (int i = 0; i < textToDisplay.length; i++) {
