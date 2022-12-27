@@ -4,7 +4,7 @@ public class Player extends AnimatedSprite{
   PImage[] standRight;
   PImage[] jumpLeft;
   PImage[] jumpRight;
-  public Player(PImage img, float scale){
+  public Player(PImage img, float scale) {
     super(img, scale);
     direction = RIGHT_FACING;
     onPlatform = true;
@@ -22,46 +22,51 @@ public class Player extends AnimatedSprite{
     jumpRight = new PImage[1];
     jumpRight[0] = loadImage("YSquare_Jump.png");
     jumpLeft = new PImage[1];
-    jumpLeft[0] = loadImage("YSquare_Jump_Left.png");
+    jumpLeft[0] = loadImage("YSquare_Jump_left.png");
     currentImages = standRight;
   }
+
   @Override
-  public void updateAnimation(){
+  public void updateAnimation() {
     onPlatform = isLanded(this, platforms);
     inPlace = change_x == 0 && change_y == 0;
     super.updateAnimation();
+  }
 
-  }
   @Override
-  public void selectDirection(){
-    if(change_x > 0)
+  public void selectDirection() {
+    if(change_x > 0){
       direction = RIGHT_FACING;
-    else if(change_x < 0)
-      direction = LEFT_FACING;    
+    }
+    else if(change_x < 0) {
+      direction = LEFT_FACING;
+    }
   }
+
   @Override
-  public void selectCurrentImages(){
+  public void selectCurrentImages() {
   
     if(direction == RIGHT_FACING) {
       if(inPlace){
         currentImages = standRight;
       }
-      else if(!isSpacebarActionable){
+      else if(!onPlatform){
         currentImages = jumpRight;
-    }  
+      }
       else {
         currentImages = moveRight;
-    }  
-  }
-  else if(direction == LEFT_FACING){
-      if(inPlace){
+      }  
+    }
+    else if(direction == LEFT_FACING) {
+      if(inPlace) {
         currentImages = standLeft;
       }
-      else if(!onPlatform)
+      else if(!onPlatform) {
         currentImages = jumpLeft;
-     
-      else
+      }
+      else {
         currentImages = moveLeft;
+      }
     }  
   }
 }

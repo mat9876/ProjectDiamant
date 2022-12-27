@@ -42,7 +42,7 @@ ArrayList<Sprite> collidables = new ArrayList<>();
 ArrayList<Integer> inputQueue = new ArrayList<>();
 
 // Sprites / Images
-Sprite player;
+Player player;
 PImage square_img, diamond_img, playerPlatform_img;
 
 // Keep track of current level number
@@ -97,15 +97,14 @@ public void setup() {
   shiftZone_x = pixelWidth / 3;
   shiftZone_y = pixelHeight / 3;
 
-  // Spawn the player in game on the given x- and y-cordinates.
-  player = new Sprite("YSquare.png", 3.0, DEFAULT_PLAYER_X, DEFAULT_PLAYER_Y);
-  player.change_x = 0;
-  player.change_y = 0;
-
   // Load the different assets for the game.
+  PImage player_img = loadImage("YSquare.png");
   square_img = loadImage("Square.png");
   diamond_img = loadImage("Diamond.png");
   playerPlatform_img = loadImage("PlayerPlatform0.png");
+
+  // Spawn the player in game
+  player = new Player(player_img, 3.0);
 
   // Load the first level
   loadLevel(levelNum);
@@ -344,6 +343,9 @@ public void drawSprites() {
   for (Sprite playerPlatform : playerPlatforms) {
     playerPlatform.display(-offset_x, -offset_y);
   }
+  player.updateAnimation();
+  player.selectDirection();
+  player.selectCurrentImages();
   player.display(-offset_x, -offset_y);
 }
 

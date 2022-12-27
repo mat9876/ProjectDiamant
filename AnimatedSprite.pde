@@ -14,12 +14,14 @@ public class AnimatedSprite extends Sprite{
   }
   
   public void updateAnimation(){
-   frame++;
-   if(frame % 5 == 0) {
-     selectDirection();
-     selectCurrentImages();
-     advanceToNextImage();
-   }
+    selectDirection();
+    selectCurrentImages();
+
+    if(frame % 5 == 0) {
+      advanceToNextImage();
+    }
+
+    frame++;
   }
   
   public void selectDirection(){
@@ -33,7 +35,6 @@ public class AnimatedSprite extends Sprite{
       direction = NEUTRAL_FACING;  
     }
   }
-
   
   public void selectCurrentImages(){
     if(direction == RIGHT_FACING){
@@ -46,11 +47,9 @@ public class AnimatedSprite extends Sprite{
       currentImages = standNeutral;
     }
   }
+
   public void advanceToNextImage(){
-   index++;
-   if (index >= currentImages.length) {
-     index = 0;
-     image = currentImages[index];    
-    }
+    image = currentImages[index % currentImages.length];   
+    index++;
   }
-  }
+}
