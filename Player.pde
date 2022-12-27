@@ -28,14 +28,14 @@ public class Player extends AnimatedSprite{
 
   @Override
   public void updateAnimation() {
-    onPlatform = isLanded(this, platforms);
+    onPlatform = isLanded(this, collidables);
     inPlace = change_x == 0 && change_y == 0;
     super.updateAnimation();
   }
 
   @Override
   public void selectDirection() {
-    if(change_x > 0){
+    if(change_x > 0) {
       direction = RIGHT_FACING;
     }
     else if(change_x < 0) {
