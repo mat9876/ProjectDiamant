@@ -234,7 +234,7 @@ public void removePlatform(Sprite playerPlatform) {
 }
 
 // Checks if `sprite` is directly on top of any items in `platforms`
-public boolean isLanded(Sprite sprite, ArrayList<Sprite>platforms){
+public boolean isLanded(Sprite sprite, ArrayList<Sprite>platforms) {
   sprite.center_y += 5;
   ArrayList<Sprite> col_list = checkCollisionList(sprite, platforms);
   sprite.center_y -= 5;
@@ -267,7 +267,7 @@ public void drawDebugText() {
     "inputQueue: " + iQueue,
     "Animation debug:",
     "Direction: " + direction,
-    "Change_X:" + change_x,
+    "Change_X:" + player.change_x,
   };
 
   for (int i = 0; i < textToDisplay.length; i++) {
