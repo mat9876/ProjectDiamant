@@ -1,78 +1,3 @@
-//// GLOBAL DEFINITIONS ////
-// Integers for displaying the amount of pixels during testing fase(Delete in the final version).
-final static int TARGET_DISPLAY_WIDTH = 1920;
-final static int TARGET_DISPLAY_HEIGHT = 1080;
-// Integers for displaying the amount of frames per second during testing fase(Delete in the final version).
-final static int TARGET_FRAMERATE = 60;
-
-// Integers for calculating the positions of the player character to use during animation
-final static int NEUTRAL_FACING = 0;
-final static int RIGHT_FACING = 1;
-final static int LEFT_FACING = 2;
-
-// Alignment / Scaling
-final static float RIGHT_MARGIN = 400;
-final static float LEFT_MARGIN = 60;
-final static float VERTICAL_MARGIN = 40;
-final static float SPRITE_SCALE = 50.0/128;
-final static float SPRITE_SIZE = 50;
-final static float BASE_OFFSET_X = 15;
-final static float BASE_OFFSET_Y = 10;
-
-// Intengers for the player character
-final static float MOVE_SPEED = 6;
-final static float GRAVITY = 0.8;
-final static float JUMP_SPEED = 12;
-final static float DEFAULT_PLAYER_X = 200;
-final static float DEFAULT_PLAYER_Y = 900;
-
-//// GLOBAL VARIABLES ////
-// Indicator on whether or not a map is loaded
-boolean noMap = false;
-// Arraylist of platforms that appear in the game.
-ArrayList<Sprite> platforms = new ArrayList<>();
-ArrayList<Sprite> diamonds = new ArrayList<>();
-ArrayList<Sprite> playerPlatforms = new ArrayList<>();
-
-// ArrayList of things the player can collide with
-ArrayList<Sprite> collidables = new ArrayList<>();
-
-// Input queue for resolving conflicting inputs.
-// Should be sorted by most recent (newer -> older)
-ArrayList<Integer> inputQueue = new ArrayList<>();
-
-// Sprites / Images
-Player player;
-PImage square_img, diamond_img, playerPlatform_img;
-
-// Keep track of current level number
-int levelNum = 0;
-// Maximum amount of platforms the player can create
-int maxPlayerPlatformAmount = 3;
-// Int to count the amount of diamonds the player has collected.
-int numDiamonds = 0;
-// Int to count the amount of diamonds in the game.
-int maxDiamonds = 0;
-// Tracks whether the current spacebar press has done something
-boolean isSpacebarActionable = true;
-// Display if the player can still play the game or not.  
-boolean isGameOver = false;
-// Keep track of level size
-int levelSize_x = 0;
-int levelSize_y = 0;
-int levelSizePx_x = TARGET_DISPLAY_WIDTH;
-int levelSizePx_y = TARGET_DISPLAY_HEIGHT;
-// Define the size of the zones (from edges of viewport) in which the level will scroll
-float shiftZone_x;
-float shiftZone_y;
-// Offsets for the viewport
-float offset_x = BASE_OFFSET_X;
-float offset_y = BASE_OFFSET_Y;
-boolean enableScrollingX = false;
-boolean enableScrollingY = false;
-// Background Color
-color backgroundColor = color(55,44,44);
-
 //// PROCESSING EVENTS ////
 // Logic that should run at start-up but cannot be run in `setup()`
 public void settings() {
@@ -86,28 +11,35 @@ public void settings() {
   }
 }
 
-// Logic that should run at start-up
+// Logic that should run at start-up of the program
 public void setup() {
   frameRate(TARGET_FRAMERATE);
   imageMode(CENTER);
-
+  
+  //Define sound effects for use.
+  fail = new SoundFile(this, "fail.wav");
+  success = new SoundFile(this, "Success.wav");
+ 
   // Determine viewport shift bounds
   shiftZone_x = pixelWidth / 3;
   shiftZone_y = pixelHeight / 3;
-
-  // Load the different assets for the game.
+  
+  // Load the assest related to the playable character
   PImage[] player_stand_img = {loadImage("YSquare.png")};
   PImage[] player_move_img = {loadImage("YSquare_1.png"), loadImage("YSquare_2.png")};
   PImage[] player_jump_img = {loadImage("YSquare_Jump.png")};
-
+  
+  
+  // Load the different assets used during the game.
   square_img = loadImage("Square.png");
   diamond_img = loadImage("Diamond.png");
   playerPlatform_img = loadImage("PlayerPlatform0.png");
 
   // Spawn the player in game
   player = new Player(player_stand_img, player_move_img, player_jump_img, 3.0);
+  
 
-  // Load the first level
+  // Load the first level at the start of the program or next level after collecting the max amount of diamonds.
   loadLevel(levelNum);
 }
 
@@ -133,7 +65,7 @@ public void draw() {
   drawDebugText();
 
   // Calculations after display
-
+    fallenOfMap();
 }
 
 // Logic that runs every keypress (including repeats)
@@ -185,13 +117,17 @@ public void resolveInput() {
   for (int input : inputQueue) {
     // Right(D and ->)
     if (canMoveLR && (input == 68 || input == 39)) {
-      player.change_x = MOVE_SPEED;
+     if(player.getRight() < (TARGET_DISPLAY_WIDTH)){
+       player.change_x = MOVE_SPEED;
       canMoveLR = false;
+     }
     }
     // Left (A and <-)
     else if (canMoveLR && (input == 65 || input == 37)) {
+      if(player.getLeft() > 0){
       player.change_x = -MOVE_SPEED;
       canMoveLR = false;
+      }
     }
     // Spacebar (only count first press if not yet released)
     else if (isSpacebarActionable && input == 32) {
@@ -219,13 +155,13 @@ public void resolveInput() {
 public boolean placePlatform(float x, float y) {
   Sprite platform = new Sprite(playerPlatform_img, SPRITE_SCALE, x, y);
   if (playerPlatforms.size() >= maxPlayerPlatformAmount || checkCollision(player, platform) || checkCollisionList(platform, collidables).size() > 0) {
-    // TODO: play sound on failure
+    fail.play();
     return false;
   }
 
   playerPlatforms.add(platform);
   collidables.add(platform);
-  // TODO: play sound on success
+  success.play();
   return true;
 }
 public void removePlatform(Sprite playerPlatform) {
@@ -267,7 +203,10 @@ public void drawDebugText() {
     "inputQueue: " + iQueue,
     "Animation debug:",
     "Direction: " + player.direction,
-    "Change_X:" + player.change_x,
+    "Change_X: " + player.change_x,
+    "World collision debug: ",
+    "fallenOfTheMap: " + falllenOfMap,
+    "Ground Level: " + TARGET_DISPLAY_HEIGHT
   };
 
   for (int i = 0; i < textToDisplay.length; i++) {
@@ -277,7 +216,7 @@ public void drawDebugText() {
   fill(0, 408, 612);
 }
 
-// Handles movement that should happen per frame, including collisions
+// Handles movement that should happen per frame, including collisions with the ground and walls
 public void progressMovement() {
   player.change_y += GRAVITY;
 
@@ -332,6 +271,13 @@ public ArrayList<Sprite> checkCollisionList(Sprite sprite_1, ArrayList<Sprite> l
   }
   return collision_list;
 }
+public void fallenOfMap() {
+//Run code to check if the player has fallen of the map and then restart the player
+boolean falllenOffMap = player.getBottom() > (TARGET_DISPLAY_HEIGHT+1);
+if(falllenOffMap){
+  RestartPlayer();
+  }
+}
 
 // Display sprites
 public void drawSprites() {
@@ -345,6 +291,8 @@ public void drawSprites() {
     playerPlatform.display(-offset_x, -offset_y);
   }
   player.updateAnimation();
+  player.selectDirection();
+  player.selectCurrentImages();
   player.display(-offset_x, -offset_y);
 }
 
@@ -385,7 +333,7 @@ public void loadLevel(int levelNum) {
     }
 
     for(int col = 0; col < values.length; col++){
-      //Create ground depending on the position of the letter 1.
+      //Create ground depending on the position of the number 1 in the .csv file.
       if(values[col].equals("1")){
         Sprite sprite = new Sprite(square_img, SPRITE_SCALE);
         sprite.center_x = SPRITE_SIZE/2 + col * SPRITE_SIZE;
@@ -394,7 +342,7 @@ public void loadLevel(int levelNum) {
         collidables.add(sprite);
       }
 
-      //Create diamonds depending on the position of the letter 2.
+      //Create diamonds depending on the position of the number 2 in the .csv file.
       else if(values[col].equals("2")){
         Sprite sprite = new Sprite(diamond_img, SPRITE_SCALE);
         sprite.center_x = SPRITE_SIZE/2 + col * SPRITE_SIZE;
@@ -402,7 +350,12 @@ public void loadLevel(int levelNum) {
         diamonds.add(sprite);
         maxDiamonds++;
       }
+      //Spawns the player based on the position of the letter P in the .csv file.
+      else if(values[col].equals("P")){
+        player.center_x = SPRITE_SIZE/2 + col * SPRITE_SIZE;
+        player.center_y = SPRITE_SIZE/2 + row * SPRITE_SIZE;
     }
+  }
   }
 
   // Determine level size
@@ -424,8 +377,10 @@ public void unloadLevel() {
   collidables.clear();
   numDiamonds = 0;
   maxDiamonds = 0;
-
-  // Reset player
+  RestartPlayer();
+}
+  //Restart the player position when the level is loaded(Also used when a player falls off the map)
+  public void RestartPlayer() {
   player.center_x = DEFAULT_PLAYER_X;
   player.center_y = DEFAULT_PLAYER_Y;
   player.change_x = 0;
