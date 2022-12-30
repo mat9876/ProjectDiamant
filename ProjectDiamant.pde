@@ -2,6 +2,7 @@
 // Logic that should run at start-up but cannot be run in `setup()`
 public void settings() {
   // Open in windowed mode if screen is larger than display, fullscreen if not.
+  /*
   if (displayWidth > TARGET_DISPLAY_WIDTH || displayHeight > TARGET_DISPLAY_HEIGHT) {
     //size(1280, 720);
     size(TARGET_DISPLAY_WIDTH, TARGET_DISPLAY_HEIGHT);
@@ -9,6 +10,9 @@ public void settings() {
   else {
     fullScreen();
   }
+  */
+
+  fullScreen();
 }
 
 // Logic that should run at start-up of the program
@@ -19,7 +23,11 @@ public void setup() {
   //Define sound effects for use.
   fail = new SoundFile(this, "fail.wav");
   success = new SoundFile(this, "Success.wav");
- 
+
+  // Determine max amount of cells that the current screen resolution can display
+  maxCells_x = pixelWidth / CELL_SIZE + 1;
+  maxCells_y = pixelHeight / CELL_SIZE + 1;
+
   // Determine viewport shift bounds
   shiftZone_x = pixelWidth / 3;
   shiftZone_y = pixelHeight / 3;
@@ -62,6 +70,7 @@ public void draw() {
   // Display stuff
   background(backgroundColor);
   drawSprites();
+  drawLetterPillarBoxes();
   drawDebugText();
 
   // Calculations after display
@@ -117,7 +126,7 @@ public void resolveInput() {
   for (int input : inputQueue) {
     // Right(D and ->)
     if (canMoveLR && (input == 68 || input == 39)) {
-     if(player.getRight() < (TARGET_DISPLAY_WIDTH)){
+     if(player.getRight() < (levelSizePx_x)){
        player.change_x = MOVE_SPEED;
       canMoveLR = false;
      }
@@ -154,7 +163,15 @@ public void resolveInput() {
 // Returns true if successful, false if not.
 public boolean placePlatform(float x, float y) {
   Sprite platform = new Sprite(playerPlatform_img, SPRITE_SCALE, x, y);
-  if (playerPlatforms.size() >= maxPlayerPlatformAmount || checkCollision(player, platform) || checkCollisionList(platform, collidables).size() > 0) {
+  if (
+    playerPlatforms.size() >= maxPlayerPlatformAmount
+    || x < 0
+    || x > levelSizePx_x
+    || y < 0
+    || y > levelSizePx_y
+    || checkCollision(player, platform)
+    || checkCollisionList(platform, collidables).size() > 0
+  ) {
     fail.play();
     return false;
   }
@@ -183,6 +200,7 @@ public boolean isLanded(Sprite sprite, ArrayList<Sprite>platforms) {
 
 public void drawDebugText() {
   textSize(24);
+  fill(0, 408, 612);
 
   String iQueue = "";
   for (int input : inputQueue) {
@@ -196,7 +214,8 @@ public void drawDebugText() {
     "isGameOver: " + isGameOver,
     "Collidables: " + collidables.size(),
     String.format("Player location: %.1f; %.1f", player.center_x, player.center_y),
-    String.format("Level Dimensions: %d x %d (%d x %d)",levelSizePx_x, levelSizePx_y, levelSize_x, levelSize_y),
+    String.format("Screen Dimensions: %d x %d (%d x %d)", pixelWidth, pixelHeight, maxCells_x, maxCells_y),
+    String.format("Level Dimensions: %d x %d (%d x %d)", levelSizePx_x, levelSizePx_y, levelSize_x, levelSize_y),
     "Viewport offset: " + offset_x + ", " + offset_y,
     String.format("Speed: %01.1f (%02dfps)", frameRate/TARGET_FRAMERATE, round(frameRate)),
     "frameCount: " + frameCount,
@@ -212,8 +231,6 @@ public void drawDebugText() {
   for (int i = 0; i < textToDisplay.length; i++) {
     text(textToDisplay[i], LEFT_MARGIN, VERTICAL_MARGIN + 28*i);
   }
-
-  fill(0, 408, 612);
 }
 
 // Handles movement that should happen per frame, including collisions with the ground and walls
@@ -275,7 +292,7 @@ public void fallenOfMap() {
 //Run code to check if the player has fallen of the map and then restart the player
 boolean falllenOffMap = player.getBottom() > (TARGET_DISPLAY_HEIGHT+1);
 if(falllenOffMap){
-  RestartPlayer();
+  ResetPlayer();
   }
 }
 
@@ -294,6 +311,25 @@ public void drawSprites() {
   player.selectDirection();
   player.selectCurrentImages();
   player.display(-offset_x, -offset_y);
+}
+
+// Draw letter- and pillarboxes that are shown if the display size exceeds the level size
+public void drawLetterPillarBoxes() {
+  noStroke();
+  fill(0);
+
+  if (enablePillarBoxing) {
+    // Left
+    rect(0, 0, (pixelWidth - levelSizePx_x) / 2, pixelHeight);
+    // Right
+    rect(pixelWidth - ((pixelWidth - levelSizePx_x) / 2), 0, pixelWidth, pixelHeight);
+  }
+  if (enableLetterBoxing) {
+    // Top
+    rect(0, 0, pixelWidth, (pixelHeight - levelSizePx_y) / 2);
+    // Bottom
+    rect(0, pixelHeight - ((pixelHeight - levelSizePx_y) / 2), pixelWidth, pixelHeight);
+  }
 }
 
 // Script for collecting diamonds.
@@ -336,8 +372,8 @@ public void loadLevel(int levelNum) {
       //Create ground depending on the position of the number 1 in the .csv file.
       if(values[col].equals("1")){
         Sprite sprite = new Sprite(square_img, SPRITE_SCALE);
-        sprite.center_x = SPRITE_SIZE/2 + col * SPRITE_SIZE;
-        sprite.center_y = SPRITE_SIZE/2 + row * SPRITE_SIZE;
+        sprite.center_x = CELL_SIZE/2 + col * CELL_SIZE;
+        sprite.center_y = CELL_SIZE/2 + row * CELL_SIZE;
         platforms.add(sprite);
         collidables.add(sprite);
       }
@@ -345,28 +381,40 @@ public void loadLevel(int levelNum) {
       //Create diamonds depending on the position of the number 2 in the .csv file.
       else if(values[col].equals("2")){
         Sprite sprite = new Sprite(diamond_img, SPRITE_SCALE);
-        sprite.center_x = SPRITE_SIZE/2 + col * SPRITE_SIZE;
-        sprite.center_y = SPRITE_SIZE/2 + row * SPRITE_SIZE;
+        sprite.center_x = CELL_SIZE/2 + col * CELL_SIZE;
+        sprite.center_y = CELL_SIZE/2 + row * CELL_SIZE;
         diamonds.add(sprite);
         maxDiamonds++;
       }
       //Spawns the player based on the position of the letter P in the .csv file.
       else if(values[col].equals("P")){
-        player.center_x = SPRITE_SIZE/2 + col * SPRITE_SIZE;
-        player.center_y = SPRITE_SIZE/2 + row * SPRITE_SIZE;
+        player.center_x = CELL_SIZE/2 + col * CELL_SIZE;
+        player.center_y = CELL_SIZE/2 + row * CELL_SIZE;
+      }
     }
-  }
   }
 
   // Determine level size
   levelSize_x = maxRowLen;
   levelSize_y = lines.length;
-  levelSizePx_x = levelSize_x * 50 - (int)round(BASE_OFFSET_X*2);
-  levelSizePx_y = levelSize_y * 50 - (int)round(BASE_OFFSET_Y*2);
+  levelSizePx_x = levelSize_x * CELL_SIZE;
+  levelSizePx_y = levelSize_y * CELL_SIZE;
 
   // Determine whether to enable level scrolling
-  enableScrollingX = pixelWidth < levelSizePx_x;
-  enableScrollingY = pixelHeight < levelSizePx_y;
+  enableScrollingX = levelSize_x > maxCells_x;
+  enableScrollingY = levelSize_y > maxCells_y;
+
+  // Determine whether to enable boxing
+  enablePillarBoxing = pixelWidth > levelSize_x; 
+  enableLetterBoxing = pixelHeight > levelSize_y;
+
+  // Center the viewport if level scrolling is not enabled
+  if (!enableScrollingX) {
+    offset_x = (levelSizePx_x - pixelWidth) / 2;
+  }
+  if (!enableScrollingY) {
+    offset_y = (levelSizePx_y - pixelHeight) / 2;
+  }
 }
 
 public void unloadLevel() {
@@ -377,10 +425,11 @@ public void unloadLevel() {
   collidables.clear();
   numDiamonds = 0;
   maxDiamonds = 0;
-  RestartPlayer();
+  ResetPlayer();
 }
-  //Restart the player position when the level is loaded(Also used when a player falls off the map)
-  public void RestartPlayer() {
+
+// Reset the player position when the level is loaded(Also used when a player falls off the map)
+public void ResetPlayer() {
   player.center_x = DEFAULT_PLAYER_X;
   player.center_y = DEFAULT_PLAYER_Y;
   player.change_x = 0;

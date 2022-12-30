@@ -1,3 +1,6 @@
+// Import logic for sound effects
+import processing.sound.*;
+
 //// GLOBAL DEFINITIONS ////
 // Integers for displaying the amount of pixels the screen should take up.
 final static int TARGET_DISPLAY_WIDTH = 1920;
@@ -10,7 +13,7 @@ final static float RIGHT_MARGIN = 400;
 final static float LEFT_MARGIN = 60;
 final static float VERTICAL_MARGIN = 40;
 final static float SPRITE_SCALE = 50.0/128;
-final static float SPRITE_SIZE = 50;
+final static int CELL_SIZE = 50;
 final static float BASE_OFFSET_X = 15;
 final static float BASE_OFFSET_Y = 10;
 
@@ -57,6 +60,9 @@ int maxDiamonds = 0;
 boolean isSpacebarActionable = true;
 // Display if the player can still play the game or not.  
 boolean isGameOver = false;
+// Maximum amount of cells that can fit on the screen
+int maxCells_x;
+int maxCells_y;
 // Keep track of level size
 int levelSize_x = 0;
 int levelSize_y = 0;
@@ -70,13 +76,14 @@ float offset_x = BASE_OFFSET_X;
 float offset_y = BASE_OFFSET_Y;
 boolean enableScrollingX = false;
 boolean enableScrollingY = false;
+// Pillar- and letterboxing stuff
+boolean enablePillarBoxing = false;
+boolean enableLetterBoxing = false;
 // Background Color
 color backgroundColor = color(55,44,44);
 // Boolean used to display if the player is still on the map(delete in the final version)
 boolean falllenOfMap;
 
-// Import logic for sound effects
-import processing.sound.*;
 // Load sound effects in memory
 SoundFile fail;
 SoundFile success;
