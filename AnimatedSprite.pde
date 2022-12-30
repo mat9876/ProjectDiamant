@@ -9,19 +9,6 @@ public class AnimatedSprite extends Sprite{
   boolean has_neutral;
   boolean inPlace;
 
-  @Override
-  public void display(float offset_x, float offset_y) {
-    if (direction == LEFT_FACING) {
-      pushMatrix();
-      scale(-1, 1);
-      image(image, -center_x - offset_x, center_y + offset_y, w, h);
-      popMatrix();
-    }
-    else {
-      super.display(offset_x, offset_y);
-    }
-  }
-  
   public AnimatedSprite(PImage[] neutral_img, PImage[] stand_img, PImage[] move_img, float scale) {
     super(stand_img[0], scale);
     
@@ -43,7 +30,20 @@ public class AnimatedSprite extends Sprite{
       direction = RIGHT_FACING;
     }
   }
-  
+
+  @Override
+  public void display(float offset_x, float offset_y) {
+    if (direction == LEFT_FACING) {
+      pushMatrix();
+      scale(-1, 1);
+      image(image, -center_x - offset_x, center_y + offset_y, w, h);
+      popMatrix();
+    }
+    else {
+      super.display(offset_x, offset_y);
+    }
+  }
+
   public void updateAnimation() {
     selectDirection();
     selectCurrentImages();
