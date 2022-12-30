@@ -8,7 +8,8 @@ public class AnimatedSprite extends Sprite{
   int direction;
   boolean has_neutral;
   boolean inPlace;
-
+  
+// Define an animated sprite and its location
   public AnimatedSprite(PImage[] neutral_img, PImage[] stand_img, PImage[] move_img, float scale) {
     super(stand_img[0], scale);
     
@@ -43,7 +44,7 @@ public class AnimatedSprite extends Sprite{
       super.display(offset_x, offset_y);
     }
   }
-
+ // Check every 5 frames (1/20 of a second) if the animation needs to be updated(saves resources)
   public void updateAnimation() {
     selectDirection();
     selectCurrentImages();
@@ -54,7 +55,7 @@ public class AnimatedSprite extends Sprite{
 
     frame++;
   }
-  
+  // Find the action the player is performing and display the next image
   public void selectDirection() {
     inPlace = change_x == 0 && change_y == 0;
     if(change_x > 0) {
@@ -67,7 +68,7 @@ public class AnimatedSprite extends Sprite{
       direction = NEUTRAL_FACING;  
     }
   }
-  
+  // Find the right action that suits the player currents action
   public void selectCurrentImages() {
     if (inPlace) {
       currentImages = stand;
@@ -76,7 +77,7 @@ public class AnimatedSprite extends Sprite{
       currentImages = move;
     }
   }
-
+// Continue the animation if the player hasn't changed an action
   public void advanceToNextImage() {
     image = currentImages[index % currentImages.length];   
     index++;
