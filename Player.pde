@@ -1,49 +1,27 @@
 public class Player extends AnimatedSprite{
-  boolean onPlatform, inPlace;
-  PImage[] stand;
+  boolean onPlatform;
   PImage[] jump;
-  public Player(PImage img, float scale) {
-    super(img, scale);
-    direction = RIGHT_FACING;
-    onPlatform = true;
-    inPlace = true;
-    stand = new PImage[1];
-    stand[0] = loadImage("YSquare.png");
-    move = new PImage[2];
-    move[0] = loadImage("YSquare_1.png");
-    move[1] = loadImage("YSquare_2.png"); 
-    jump = new PImage[1];
-    jump[0] = loadImage("YSquare_Jump.png");
-    currentImages = stand;
-  }
 
-  @Override
-  public void updateAnimation() {
-    onPlatform = isLanded(this, collidables);
-    inPlace = change_x == 0 && change_y == 0;
-    super.updateAnimation();
+  public Player(PImage[] stand_img, PImage[] move_img, PImage[] jump_img, float scale) {
+    super(new PImage[0], stand_img, move_img, scale);
+
+    jump = jump_img;
+    onPlatform = true;
   }
 
   @Override
   public void selectDirection() {
-    if(change_x > 0) {
-      direction = RIGHT_FACING;
-    }
-    else if(change_x < 0) {
-      direction = LEFT_FACING;
-    }
+    super.selectDirection();
+
+    onPlatform = isLanded(this, collidables);
   }
 
   @Override
   public void selectCurrentImages() {
-    if(inPlace) {
-      currentImages = stand;
-    }
-    else if(!onPlatform) {
+    super.selectCurrentImages();
+
+    if(!onPlatform) {
       currentImages = jump;
-    }
-    else {
-      currentImages = move;
     }
   }
 }

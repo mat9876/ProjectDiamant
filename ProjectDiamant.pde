@@ -96,13 +96,16 @@ public void setup() {
   shiftZone_y = pixelHeight / 3;
 
   // Load the different assets for the game.
-  PImage player_img = loadImage("YSquare.png");
+  PImage[] player_stand_img = {loadImage("YSquare.png")};
+  PImage[] player_move_img = {loadImage("YSquare_1.png"), loadImage("YSquare_2.png")};
+  PImage[] player_jump_img = {loadImage("YSquare_Jump.png")};
+
   square_img = loadImage("Square.png");
   diamond_img = loadImage("Diamond.png");
   playerPlatform_img = loadImage("PlayerPlatform0.png");
 
   // Spawn the player in game
-  player = new Player(player_img, 3.0);
+  player = new Player(player_stand_img, player_move_img, player_jump_img, 3.0);
 
   // Load the first level
   loadLevel(levelNum);
@@ -342,8 +345,6 @@ public void drawSprites() {
     playerPlatform.display(-offset_x, -offset_y);
   }
   player.updateAnimation();
-  player.selectDirection();
-  player.selectCurrentImages();
   player.display(-offset_x, -offset_y);
 }
 

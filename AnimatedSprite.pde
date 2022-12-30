@@ -1,10 +1,13 @@
 public class AnimatedSprite extends Sprite{
-  PImage[] currentImages;
-  PImage[] standNeutral;
+  PImage[] currentImages = null;
+  PImage[] neutral;
+  PImage[] stand;
   PImage[] move;
   int index;
   int frame;
   int direction;
+  boolean has_neutral;
+  boolean inPlace;
 
   @Override
   public void display(float offset_x, float offset_y) {
@@ -19,11 +22,26 @@ public class AnimatedSprite extends Sprite{
     }
   }
   
-  public AnimatedSprite(PImage img, float scale) {
-    super(img, scale);
-    direction = NEUTRAL_FACING;
+  public AnimatedSprite(PImage[] neutral_img, PImage[] stand_img, PImage[] move_img, float scale) {
+    super(stand_img[0], scale);
+    
+    neutral = neutral_img;
+    stand = stand_img;
+    move = move_img;
+
     index = 0;
     frame = 0;
+    has_neutral = neutral_img.length > 0;
+    inPlace = true;
+
+    if (has_neutral) {
+      currentImages = neutral;
+      direction = NEUTRAL_FACING;
+    }
+    else {
+      currentImages = stand;
+      direction = RIGHT_FACING;
+    }
   }
   
   public void updateAnimation() {
@@ -38,23 +56,24 @@ public class AnimatedSprite extends Sprite{
   }
   
   public void selectDirection() {
+    inPlace = change_x == 0 && change_y == 0;
     if(change_x > 0) {
       direction = RIGHT_FACING;
     }
     else if(change_x < 0) {
       direction = LEFT_FACING;
     }
-    else {
+    else if (has_neutral) {
       direction = NEUTRAL_FACING;  
     }
   }
   
   public void selectCurrentImages() {
-    if (direction != NEUTRAL_FACING) {
-      currentImages = move;
+    if (inPlace) {
+      currentImages = stand;
     }
     else {
-      currentImages = standNeutral;
+      currentImages = move;
     }
   }
 
