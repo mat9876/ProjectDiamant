@@ -76,8 +76,10 @@ public void draw() {
   calculateOffset();
   
   // Display stuff
-  image(backgroundBuffer, screenCenter_x, screenCenter_y);
-  image(levelBuffer, screenCenter_x, screenCenter_y);
+  imageMode(CORNER);
+  image(backgroundBuffer, 0, 0);
+  image(levelBuffer, -offset_x, -offset_y);
+  imageMode(CENTER);
   drawSprites();
   drawDebugText();
 
