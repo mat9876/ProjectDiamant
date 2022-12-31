@@ -60,6 +60,9 @@ int maxDiamonds = 0;
 boolean isSpacebarActionable = true;
 // Display if the player can still play the game or not.  
 boolean isGameOver = false;
+// Center coordinates of the screen
+int screenCenter_x;
+int screenCenter_y;
 // Maximum amount of cells that can fit on the screen
 int maxCells_x;
 int maxCells_y;
@@ -83,6 +86,10 @@ boolean enableLetterBoxing = false;
 color backgroundColor = color(55,44,44);
 // Boolean used to display if the player is still on the map(delete in the final version)
 boolean falllenOfMap;
+
+// Graphics buffers
+PGraphics levelBuffer;
+PGraphics backgroundBuffer;
 
 // Load sound effects in memory
 SoundFile fail;

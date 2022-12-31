@@ -4,22 +4,30 @@ public void settings() {
   // Open in windowed mode if screen is larger than display, fullscreen if not.
   /*
   if (displayWidth > TARGET_DISPLAY_WIDTH || displayHeight > TARGET_DISPLAY_HEIGHT) {
-    //size(1280, 720);
-    size(TARGET_DISPLAY_WIDTH, TARGET_DISPLAY_HEIGHT);
+    //size(1280, 720, P2D);
+    size(TARGET_DISPLAY_WIDTH, TARGET_DISPLAY_HEIGHT, P2D);
   }
   else {
-    fullScreen();
+    fullScreen(P2D);
   }
   */
 
-  fullScreen();
+  fullScreen(P2D);
 }
 
 // Logic that should run at start-up of the program
 public void setup() {
+  background(0); // Avoid flashbanging the user
   frameRate(TARGET_FRAMERATE);
   imageMode(CENTER);
-  
+
+  // Define center of screen
+  screenCenter_x = pixelWidth / 2;
+  screenCenter_y = pixelHeight / 2;
+
+  // Initialise buffers with static size
+  backgroundBuffer = createGraphics(pixelWidth, pixelHeight);
+
   //Define sound effects for use.
   fail = new SoundFile(this, "fail.wav");
   success = new SoundFile(this, "Success.wav");
@@ -68,9 +76,9 @@ public void draw() {
   calculateOffset();
   
   // Display stuff
-  background(backgroundColor);
+  image(backgroundBuffer, screenCenter_x, screenCenter_y);
+  image(levelBuffer, screenCenter_x, screenCenter_y);
   drawSprites();
-  drawLetterPillarBoxes();
   drawDebugText();
 
   // Calculations after display
@@ -298,9 +306,6 @@ if(falllenOffMap){
 
 // Display sprites
 public void drawSprites() {
-  for (Sprite sprite : platforms) {
-    sprite.display(-offset_x, -offset_y);
-  }
   for (Sprite diamond : diamonds) {
     diamond.display(-offset_x, -offset_y);
   }
@@ -308,28 +313,7 @@ public void drawSprites() {
     playerPlatform.display(-offset_x, -offset_y);
   }
   player.updateAnimation();
-  player.selectDirection();
-  player.selectCurrentImages();
   player.display(-offset_x, -offset_y);
-}
-
-// Draw letter- and pillarboxes that are shown if the display size exceeds the level size
-public void drawLetterPillarBoxes() {
-  noStroke();
-  fill(0);
-
-  if (enablePillarBoxing) {
-    // Left
-    rect(0, 0, (pixelWidth - levelSizePx_x) / 2, pixelHeight);
-    // Right
-    rect(pixelWidth - ((pixelWidth - levelSizePx_x) / 2), 0, pixelWidth, pixelHeight);
-  }
-  if (enableLetterBoxing) {
-    // Top
-    rect(0, 0, pixelWidth, (pixelHeight - levelSizePx_y) / 2);
-    // Bottom
-    rect(0, pixelHeight - ((pixelHeight - levelSizePx_y) / 2), pixelWidth, pixelHeight);
-  }
 }
 
 // Script for collecting diamonds.
@@ -415,6 +399,10 @@ public void loadLevel(int levelNum) {
   if (!enableScrollingY) {
     offset_y = (levelSizePx_y - pixelHeight) / 2;
   }
+
+  // Generate image buffers
+  generateLevelBuffer();
+  generateBackgroundBuffer();
 }
 
 public void unloadLevel() {
@@ -426,6 +414,27 @@ public void unloadLevel() {
   numDiamonds = 0;
   maxDiamonds = 0;
   ResetPlayer();
+}
+
+// Generate buffer image for the static parts of the level
+public void generateLevelBuffer() {
+  levelBuffer = createGraphics(levelSizePx_x, levelSizePx_y);
+  levelBuffer.beginDraw();
+  levelBuffer.imageMode(CENTER);
+  for (Sprite sprite : platforms) {
+    levelBuffer.image(sprite.image, sprite.center_x, sprite.center_y, sprite.w, sprite.h);
+  }
+  levelBuffer.endDraw();
+}
+
+// Generate buffer image for the background
+public void generateBackgroundBuffer() {
+  backgroundBuffer.beginDraw();
+  backgroundBuffer.noStroke();
+  backgroundBuffer.fill(backgroundColor);
+  backgroundBuffer.background(0);
+  backgroundBuffer.rect((pixelWidth - levelSizePx_x) / 2, (pixelHeight - levelSizePx_y) / 2, levelSizePx_x, levelSizePx_y);
+  backgroundBuffer.endDraw();
 }
 
 // Reset the player position when the level is loaded(Also used when a player falls off the map)
