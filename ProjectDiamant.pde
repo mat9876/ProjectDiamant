@@ -493,3 +493,14 @@ public void calculateOffset() {
     }
   }
 }
+
+// Scale an image without blurring it
+PImage scaleImageNoBlur(PImage img, int w, int h){
+  PGraphics buffer = createGraphics(w, h);
+  buffer.noSmooth();
+  buffer.beginDraw();
+  buffer.image(img, 0, 0, w, h);
+  buffer.endDraw();
+
+  return buffer.get();
+}

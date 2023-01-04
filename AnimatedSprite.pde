@@ -22,6 +22,17 @@ public class AnimatedSprite extends Sprite{
     has_neutral = neutral_img.length > 0;
     inPlace = true;
 
+    // Scale
+    for (int i = 0; i < neutral.length; i++) {
+      neutral[i] = scaleImageNoBlur(neutral[i], (int)w, (int)h);
+    }
+    for (int i = 0; i < stand.length; i++) {
+      stand[i] = scaleImageNoBlur(stand[i], (int)w, (int)h);
+    }
+    for (int i = 0; i < move.length; i++) {
+      move[i] = scaleImageNoBlur(move[i], (int)w, (int)h);
+    }
+
     if (has_neutral) {
       currentImages = neutral;
       direction = NEUTRAL_FACING;
