@@ -238,7 +238,7 @@ public void drawDebugText() {
     "Change_X: " + player.change_x,
     "World collision debug: ",
     "fallenOfTheMap: " + falllenOfMap,
-    "Ground Level: " + TARGET_DISPLAY_HEIGHT
+    "Ground Level: " + levelSizePx_x
   };
 
   for (int i = 0; i < textToDisplay.length; i++) {
@@ -303,7 +303,7 @@ public ArrayList<Sprite> checkCollisionList(Sprite sprite_1, ArrayList<Sprite> l
 }
 public void fallenOfMap() {
 //Run code to check if the player has fallen of the map and then restart the player
-boolean falllenOffMap = player.getBottom() > (TARGET_DISPLAY_HEIGHT+1);
+boolean falllenOffMap = player.getBottom() > (levelSizePx_y);
 if(falllenOffMap){
   ResetPlayer();
   }
