@@ -1,5 +1,6 @@
 // Import logic for sound effects
 import processing.sound.*;
+import processing.javafx.*;
 
 //// GLOBAL DEFINITIONS ////
 // Integers for displaying the amount of pixels the screen should take up.

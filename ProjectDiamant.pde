@@ -1,6 +1,9 @@
 //// PROCESSING EVENTS ////
 // Logic that should run at start-up but cannot be run in `setup()`
 public void settings() {
+  // Disable DPI-scaling
+  System.setProperty("prism.allowhidpi", "false");
+
   // Open in windowed mode if screen is larger than display, fullscreen if not.
   /*
   if (displayWidth > TARGET_DISPLAY_WIDTH || displayHeight > TARGET_DISPLAY_HEIGHT) {
@@ -12,7 +15,7 @@ public void settings() {
   }
   */
 
-  fullScreen(P2D);
+  fullScreen(FX2D);
 }
 
 // Logic that should run at start-up of the program
