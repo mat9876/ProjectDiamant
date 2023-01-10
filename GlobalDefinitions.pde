@@ -88,6 +88,13 @@ color backgroundColor = color(55,44,44);
 // Boolean used to display if the player is still on the map(delete in the final version)
 boolean falllenOfMap;
 
+// Mouse position in relation to the level
+float realMouseX;
+float realMouseY;
+// Moouse position from the previous frame
+float realMousePrevX;
+float realMousePrevY;
+
 // Graphics buffers
 PGraphics levelBuffer;
 PGraphics backgroundBuffer;

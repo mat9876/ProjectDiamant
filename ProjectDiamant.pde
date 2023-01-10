@@ -112,8 +112,8 @@ public void keyReleased() {
 
 // Logic that runs every mouse press
 public void mousePressed() {
-  float realMouseX = mouseX + offset_x;
-  float realMouseY = mouseY + offset_y;
+  realMouseX = mouseX + offset_x;
+  realMouseY = mouseY + offset_y;
 
   // Left mouse button
   if (mouseButton == 37) {
@@ -121,13 +121,15 @@ public void mousePressed() {
   }
 
   // Right mouse button
+  if (mouseButton == 39){
+    realMousePrevX = realMouseX;
+    realMousePrevY = realMouseY;
+    inputQueue.add(-mouseButton); // Negating; conflicts with keyCode
+  }
+}
+public void mouseReleased() {
   if (mouseButton == 39) {
-    for (Sprite platform : playerPlatforms) {
-      if (realMouseX > platform.getLeft() && realMouseX < platform.getRight() && realMouseY > platform.getTop() && realMouseY < platform.getBottom()) {
-        removePlatform(platform);
-        break;
-      }
-    }
+    inputQueue.remove((Integer) (-mouseButton));
   }
 }
 
@@ -163,6 +165,18 @@ public void resolveInput() {
       // In air, attempt to place platform
       else if (placePlatform(player.center_x, player.center_y + 64 + 12)) {
         isSpacebarActionable = false;
+      }
+    }
+    // Right mouse button (remove platform)
+    else if (input == -39) {
+      realMouseX = mouseX + offset_x;
+      realMouseY = mouseY + offset_y;
+      for (Sprite platform : playerPlatforms) {
+        // TODO: remove platform if mouse went over platform between frames
+        if (realMouseX > platform.getLeft() && realMouseX < platform.getRight() && realMouseY > platform.getTop() && realMouseY < platform.getBottom()) {
+          removePlatform(platform);
+          break;
+        }
       }
     }
   }
