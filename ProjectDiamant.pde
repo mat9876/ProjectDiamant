@@ -167,8 +167,10 @@ public void resolveInput() {
     }
     // Right mouse button (remove platform)
     else if (input == -39) {
+      ArrayList<Sprite> removalList = new ArrayList<>();
       realMouseX = mouseX + offset_x;
       realMouseY = mouseY + offset_y;
+
       for (Sprite platform : playerPlatforms) {
         if (
             // Mouse is inside platform
@@ -179,8 +181,11 @@ public void resolveInput() {
             || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, platform.left, platform.bottom, platform.left, platform.top)
             || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, platform.left, platform.bottom, platform.right, platform.bottom)
           ) {
-          removePlatform(platform);
+            removalList.add(platform);
         }
+      }
+      for (Sprite platform : removalList) {
+        removePlatform(platform);
       }
       realMousePrevX = realMouseX;
       realMousePrevY = realMouseY;
