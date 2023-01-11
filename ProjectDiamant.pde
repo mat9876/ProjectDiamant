@@ -170,19 +170,14 @@ public void resolveInput() {
       realMouseX = mouseX + offset_x;
       realMouseY = mouseY + offset_y;
       for (Sprite platform : playerPlatforms) {
-        float right = platform.right;
-        float left = platform.left;
-        float bottom = platform.bottom;
-        float top = platform.top;
-
         if (
             // Mouse is inside platform
-            (realMouseX > left && realMouseX < right && realMouseY > top && realMouseY < bottom)
+            (realMouseX > platform.left && realMouseX < platform.right && realMouseY > platform.top && realMouseY < platform.bottom)
             // Mouse went over the platform
-            || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, right, top, right, bottom)
-            || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, right, top, left, top)
-            || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, left, bottom, left, top)
-            || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, left, bottom, right, bottom)
+            || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, platform.right, platform.top, platform.right, platform.bottom)
+            || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, platform.right, platform.top, platform.left, platform.top)
+            || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, platform.left, platform.bottom, platform.left, platform.top)
+            || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, platform.left, platform.bottom, platform.right, platform.bottom)
           ) {
           removePlatform(platform);
         }
