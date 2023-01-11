@@ -172,12 +172,25 @@ public void resolveInput() {
       realMouseX = mouseX + offset_x;
       realMouseY = mouseY + offset_y;
       for (Sprite platform : playerPlatforms) {
-        // TODO: remove platform if mouse went over platform between frames
-        if (realMouseX > platform.getLeft() && realMouseX < platform.getRight() && realMouseY > platform.getTop() && realMouseY < platform.getBottom()) {
+        float right = platform.getRight();
+        float left = platform.getLeft();
+        float bottom = platform.getBottom();
+        float top = platform.getTop();
+
+        if (
+            // Mouse is inside platform
+            (realMouseX > left && realMouseX < right && realMouseY > top && realMouseY < bottom)
+            // Mouse went over the platform
+            || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, right, top, right, bottom)
+            || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, right, top, left, top)
+            || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, left, bottom, left, top)
+            || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, left, bottom, right, bottom)
+          ) {
           removePlatform(platform);
-          break;
         }
       }
+      realMousePrevX = realMouseX;
+      realMousePrevY = realMouseY;
     }
   }
   // Stop left-right movement if no such key is pressed
@@ -520,4 +533,20 @@ PImage scaleImageNoBlur(PImage img, int w, int h){
   buffer.endDraw();
 
   return buffer.get();
+}
+
+// Check for collision between line segments
+boolean checkLineCollision(float x1a, float y1a, float x1b, float y1b, float x2a, float y2a, float x2b, float y2b) {
+  float denominator = ((x1b - x1a) * (y2b - y2a)) - ((y1b - y1a) * (x2b - x2a));
+  float numerator1 = ((y1a - y2a) * (x2b - x2a)) - ((x1a - x2a) * (y2b - y2a));
+  float numerator2 = ((y1a - y2a) * (x1b - x1a)) - ((x1a - x2a) * (y1b - y1a));
+
+  // Prevent 0-division if lines are parralel
+  if (denominator == 0) {
+    return numerator1 == 0 && numerator2 == 0;
+  }
+
+  float r = numerator1 / denominator;
+  float s = numerator2 / denominator;
+  return ((r >= 0 && r <= 1) && (s >= 0 && s <= 1));
 }
