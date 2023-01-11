@@ -87,6 +87,9 @@ boolean enableLetterBoxing = false;
 color backgroundColor = color(55,44,44);
 // Boolean used to display if the player is still on the map(delete in the final version)
 boolean falllenOfMap;
+// Spawn point of player
+float playerSpawnX;
+float playerSpawnY;
 
 // Mouse position in relation to the level
 float realMouseX;

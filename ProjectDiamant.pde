@@ -141,24 +141,22 @@ public void resolveInput() {
   for (int input : inputQueue) {
     // Right(D and ->)
     if (canMoveLR && (input == 68 || input == 39)) {
-     if(player.getRight() < (levelSizePx_x)){
+     if(player.right < (levelSizePx_x)){
        player.change_x = MOVE_SPEED;
       canMoveLR = false;
      }
     }
     // Left (A and <-)
     else if (canMoveLR && (input == 65 || input == 37)) {
-      if(player.getLeft() > 0){
+      if(player.left > 0){
       player.change_x = -MOVE_SPEED;
       canMoveLR = false;
       }
     }
     // Spacebar (only count first press if not yet released)
     else if (isSpacebarActionable && input == 32) {
-      boolean isLanded = isLanded(player, collidables);
-
       // On ground; jump
-      if (isLanded) {
+      if (isLanded(player, collidables)) {
         isSpacebarActionable = false;
         player.change_y = -JUMP_SPEED;
       }
@@ -172,10 +170,10 @@ public void resolveInput() {
       realMouseX = mouseX + offset_x;
       realMouseY = mouseY + offset_y;
       for (Sprite platform : playerPlatforms) {
-        float right = platform.getRight();
-        float left = platform.getLeft();
-        float bottom = platform.getBottom();
-        float top = platform.getTop();
+        float right = platform.right;
+        float left = platform.left;
+        float bottom = platform.bottom;
+        float top = platform.top;
 
         if (
             // Mouse is inside platform
@@ -228,9 +226,9 @@ public void removePlatform(Sprite playerPlatform) {
 
 // Checks if `sprite` is directly on top of any items in `platforms`
 public boolean isLanded(Sprite sprite, ArrayList<Sprite>platforms) {
-  sprite.center_y += 5;
+  sprite.changeCenter(0, 5);
   ArrayList<Sprite> col_list = checkCollisionList(sprite, platforms);
-  sprite.center_y -= 5;
+  sprite.changeCenter(0, -5);
 
   if(col_list.size() > 0) {
     return true;
@@ -278,44 +276,44 @@ public void progressMovement() {
   player.change_y += GRAVITY;
 
   // Check the top and bottom of the player
-  player.center_y += player.change_y;
+  player.changeCenter(0, player.change_y);
   ArrayList<Sprite> col_list = checkCollisionList(player, collidables);
   if (col_list.size() > 0) {
     Sprite collided = col_list.get(0);
 
     // Check if player is colliding with the top of a collision.
     if (player.change_y > 0) {
-      player.setBottom(collided.getTop());
+      player.setBottom(collided.top);
     }
 
     // Check if player is colliding with the bottom of a collision.
     else if (player.change_y < 0) {
-      player.setTop(collided.getBottom());
+      player.setTop(collided.bottom);
     }
     player.change_y = 0;
   }
 
   // Check the left and right of the player.
-  player.center_x += player.change_x;
+  player.changeCenter(player.change_x, 0);
   col_list = checkCollisionList(player, collidables);
   if (col_list.size() > 0) {
     Sprite collided = col_list.get(0);
 
     //Check if player is colliding with the right of a collision.
     if (player.change_x > 0) {
-      player.setRight(collided.getLeft());
+      player.setRight(collided.left);
     }
 
     //Check if player is colliding with the left of a collision.
     else if (player.change_x < 0) {
-      player.setLeft(collided.getRight());
+      player.setLeft(collided.right);
     }
   }
 }
 
 // Run a simple check for collision to make platforms solid.
 public boolean checkCollision(Sprite s1, Sprite s2) {
-  return !(s1.getRight() <= s2.getLeft() || s1.getLeft() >= s2.getRight() || s1.getBottom() <= s2.getTop() || s1.getTop() >= s2.getBottom());
+  return s1.right > s2.left && s1.left < s2.right && s1.bottom > s2.top && s1.top < s2.bottom;
 }
 
 // Check the amount of sprites the player is colliding and add them to an ArrayList.
@@ -330,9 +328,9 @@ public ArrayList<Sprite> checkCollisionList(Sprite sprite_1, ArrayList<Sprite> l
 }
 public void fallenOfMap() {
 //Run code to check if the player has fallen of the map and then restart the player
-boolean falllenOffMap = player.getBottom() > (levelSizePx_y);
+boolean falllenOffMap = player.bottom > (levelSizePx_y);
 if(falllenOffMap){
-  ResetPlayer();
+  resetPlayer();
   }
 }
 
@@ -377,6 +375,9 @@ public void loadLevel(int levelNum) {
     return;
   }
 
+  playerSpawnX = DEFAULT_PLAYER_X;
+  playerSpawnY = DEFAULT_PLAYER_Y;
+
   // Create platforms on canvas for players
   for(int row = 0; row < lines.length; row++){
     String[] values = split(lines[row], ",");
@@ -388,8 +389,7 @@ public void loadLevel(int levelNum) {
       //Create ground depending on the position of the number 1 in the .csv file.
       if(values[col].equals("1")){
         Sprite sprite = new Sprite(square_img, SPRITE_SCALE);
-        sprite.center_x = CELL_SIZE/2 + col * CELL_SIZE;
-        sprite.center_y = CELL_SIZE/2 + row * CELL_SIZE;
+        sprite.setCenter(CELL_SIZE/2 + col * CELL_SIZE, CELL_SIZE/2 + row * CELL_SIZE);
         platforms.add(sprite);
         collidables.add(sprite);
       }
@@ -397,15 +397,14 @@ public void loadLevel(int levelNum) {
       //Create diamonds depending on the position of the number 2 in the .csv file.
       else if(values[col].equals("2")){
         Sprite sprite = new Sprite(diamond_img, SPRITE_SCALE);
-        sprite.center_x = CELL_SIZE/2 + col * CELL_SIZE;
-        sprite.center_y = CELL_SIZE/2 + row * CELL_SIZE;
+        sprite.setCenter(CELL_SIZE/2 + col * CELL_SIZE, CELL_SIZE/2 + row * CELL_SIZE);
         diamonds.add(sprite);
         maxDiamonds++;
       }
-      //Spawns the player based on the position of the letter P in the .csv file.
+      //Set player spawn point based on the position of the letter P in the .csv file.
       else if(values[col].equals("P")){
-        player.center_x = CELL_SIZE/2 + col * CELL_SIZE;
-        player.center_y = CELL_SIZE/2 + row * CELL_SIZE;
+        playerSpawnX = CELL_SIZE/2 + col * CELL_SIZE;
+        playerSpawnY = CELL_SIZE/2 + row * CELL_SIZE;
       }
     }
   }
@@ -432,6 +431,8 @@ public void loadLevel(int levelNum) {
     offset_y = (levelSizePx_y - pixelHeight) / 2;
   }
 
+  player.setCenter(playerSpawnX, playerSpawnY);
+
   // Generate image buffers
   generateLevelBuffer();
   generateBackgroundBuffer();
@@ -445,7 +446,7 @@ public void unloadLevel() {
   collidables.clear();
   numDiamonds = 0;
   maxDiamonds = 0;
-  ResetPlayer();
+  resetPlayer();
 }
 
 // Generate buffer image for the static parts of the level
@@ -470,9 +471,8 @@ public void generateBackgroundBuffer() {
 }
 
 // Reset the player position when the level is loaded(Also used when a player falls off the map)
-public void ResetPlayer() {
-  player.center_x = DEFAULT_PLAYER_X;
-  player.center_y = DEFAULT_PLAYER_Y;
+public void resetPlayer() {
+  player.setCenter(playerSpawnX, playerSpawnY);
   player.change_x = 0;
   player.change_y = 0;
 }

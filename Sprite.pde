@@ -3,6 +3,7 @@ public class Sprite {
   float center_x, center_y;
   float change_x, change_y;
   float w, h;
+  float left, right, bottom, top;
 
   public Sprite(String filename, float scale, float x, float y) {
     image = loadImage(filename);
@@ -14,6 +15,8 @@ public class Sprite {
     center_y = y;
     change_x = 0;
     change_y = 0;
+
+    updateBounds();
   }
   public Sprite(String filename, float scale) {
     this(filename, scale, 0, 0);
@@ -29,6 +32,8 @@ public class Sprite {
     center_y = y;
     change_x = 0;
     change_y = 0;
+
+    updateBounds();
   }
   public Sprite(PImage img, float scale) {
     this(img, scale, 0, 0);
@@ -41,30 +46,35 @@ public class Sprite {
   public void update() {
     center_x += change_x;
     center_y += change_y;
+    updateBounds();
+  }
+
+  void updateBounds() {
+    left = center_x - w/2;
+    right = center_x + w/2;
+    bottom = center_y + h/2;
+    top = center_y - h/2;
   }
   
-  void setLeft(float left) {
-    center_x = left + w/2;
+  void setCenter(float x, float y) {
+    center_x = x;
+    center_y = y;
+    updateBounds();
   }
-  float getLeft() {
-    return center_x - w/2;
+  void changeCenter(float x, float y) {
+    setCenter(center_x + x, center_y + y);
   }
-  void setRight(float right) {
-    center_x = right - w/2;
+
+  void setLeft(float coordinate) {
+    setCenter(coordinate + w/2, center_y);
   }
-  float getRight() {
-    return center_x + w/2;
+  void setRight(float coordinate) {
+    setCenter(coordinate - w/2, center_y);
   }
-  void setTop(float top) {
-    center_y = top + h/2;
+  void setTop(float coordinate) {
+    setCenter(center_x, coordinate + h/2);
   }
-  float getTop() {
-    return center_y - h/2;
-  }
-  void setBottom(float bottom) {
-    center_y = bottom - h/2;
-  }
-  float getBottom() {
-    return center_y + h/2;
+  void setBottom(float coordinate) {
+    setCenter(center_x, coordinate - h/2);
   }
 }
