@@ -161,7 +161,7 @@ public void resolveInput() {
         player.change_y = -JUMP_SPEED;
       }
       // In air, attempt to place platform
-      else if (placePlatform(player.center_x, player.center_y + 64 + 12)) {
+      else if (placePlatform(player.center_x, player.bottom + 16)) {
         isSpacebarActionable = false;
       }
     }
