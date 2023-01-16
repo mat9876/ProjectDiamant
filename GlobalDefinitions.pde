@@ -36,6 +36,7 @@ boolean noMap = false;
 // Arraylist of platforms that appear in the game.
 ArrayList<Sprite> platforms = new ArrayList<>();
 ArrayList<Sprite> diamonds = new ArrayList<>();
+ArrayList<Sprite> collected_diamonds = new ArrayList<>();
 ArrayList<Sprite> playerPlatforms = new ArrayList<>();
 
 // ArrayList of things the player can collide with
@@ -53,8 +54,6 @@ PImage square_img, diamond_img, playerPlatform_img;
 int levelNum = 0;
 // Maximum amount of platforms the player can create
 int maxPlayerPlatformAmount = 1;
-// Int to count the amount of diamonds the player has collected.
-int numDiamonds = 0;
 // Int to count the amount of diamonds in the game.
 int maxDiamonds = 0;
 // Tracks whether the current spacebar press has done something

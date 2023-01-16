@@ -87,7 +87,9 @@ public void draw() {
   drawDebugText();
 
   // Calculations after display
-    fallenOfMap();
+  if (checkOutOfBounds(player)) {
+    resetLevel();
+  }
 }
 
 // Logic that runs every keypress (including repeats)
@@ -141,17 +143,13 @@ public void resolveInput() {
   for (int input : inputQueue) {
     // Right(D and ->)
     if (canMoveLR && (input == 68 || input == 39)) {
-     if(player.right < (levelSizePx_x)){
-       player.change_x = MOVE_SPEED;
+      player.change_x = MOVE_SPEED;
       canMoveLR = false;
-     }
     }
     // Left (A and <-)
     else if (canMoveLR && (input == 65 || input == 37)) {
-      if(player.left > 0){
       player.change_x = -MOVE_SPEED;
       canMoveLR = false;
-      }
     }
     // Spacebar (only count first press if not yet released)
     else if (isSpacebarActionable && input == 32) {
@@ -247,7 +245,7 @@ public void drawDebugText() {
 
   String[] textToDisplay = {
     "Level: " + levelNum,
-    "Diamonds: " + numDiamonds + "/" + maxDiamonds,
+    "Diamonds: " + collected_diamonds.size() + "/" + maxDiamonds,
     "Platforms: " + playerPlatforms.size() + "/" + maxPlayerPlatformAmount,
     "isGameOver: " + isGameOver,
     "Collidables: " + collidables.size(),
@@ -309,6 +307,22 @@ public void progressMovement() {
       player.setLeft(collided.right);
     }
   }
+
+  // Check out-of-bounds
+  if (player.left < 0) {
+    player.setLeft(0);
+  }
+  else if (player.right > levelSizePx_x) {
+    player.setRight(levelSizePx_x);
+  }
+  if (player.top < 0) {
+    player.setTop(0);
+  }
+  /* Leave bottom of level open
+  else if (player.bottom > levelSizePx_y) {
+    player.setBottom(levelSizePx_y);
+  }
+  */
 }
 
 // Run a simple check for collision to make platforms solid.
@@ -326,12 +340,14 @@ public ArrayList<Sprite> checkCollisionList(Sprite sprite_1, ArrayList<Sprite> l
   }
   return collision_list;
 }
-public void fallenOfMap() {
-//Run code to check if the player has fallen of the map and then restart the player
-boolean falllenOffMap = player.bottom > (levelSizePx_y);
-if(falllenOffMap){
-  resetPlayer();
-  }
+
+// Check if the given coordinates are out of bounds
+public boolean checkOutOfBounds(float x, float y) {
+  return x < 0 || x > levelSizePx_x || y < 0 || y > levelSizePx_y;
+}
+// OOB check for sprites
+public boolean checkOutOfBounds(Sprite sprite) {
+  return sprite.left < 0 || sprite.right > levelSizePx_x || sprite.top < 0 || sprite.bottom > levelSizePx_y;
 }
 
 // Display sprites
@@ -351,11 +367,11 @@ public void collectDiamond() {
   ArrayList<Sprite> diamond_collision_list = checkCollisionList(player, diamonds);
   if(diamond_collision_list.size() > 0){
     for(Sprite diamond: diamond_collision_list){
-      numDiamonds++;
       diamonds.remove(diamond);
+      collected_diamonds.add(diamond);
     }
   }
-  if(numDiamonds == maxDiamonds){
+  if(collected_diamonds.size() == maxDiamonds){
     levelComplete();
   }
 }
@@ -438,15 +454,24 @@ public void loadLevel(int levelNum) {
   generateBackgroundBuffer();
 }
 
+// Completely unload (and reset) any and all data of the level
 public void unloadLevel() {
-  // Clear level
   platforms.clear();
   diamonds.clear();
   playerPlatforms.clear();
   collidables.clear();
-  numDiamonds = 0;
+  collected_diamonds.clear();
   maxDiamonds = 0;
   resetPlayer();
+}
+
+// Reset level to base
+public void resetLevel() {
+  resetPlayer();
+  for (Sprite diamond : collected_diamonds) {
+    diamonds.add(diamond);
+  }
+  collected_diamonds.clear();
 }
 
 // Generate buffer image for the static parts of the level
