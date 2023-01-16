@@ -1,4 +1,5 @@
 # ProjectDiamant
+A student project for the HBO-ICT course of [Saxion Hogeschool](https://www.saxion.nl)
 
 ## Installation
 Program files and installation instructions can be found on the [Releases page](https://github.com/mat9876/ProjectDiamant/releases/latest).
