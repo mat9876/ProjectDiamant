@@ -1,6 +1,6 @@
 // Import logic for sound effects
-import processing.sound.*;
-import processing.javafx.*;
+import processing.sound.SoundFile;
+import processing.javafx.PGraphicsFX2D;
 
 //// GLOBAL DEFINITIONS ////
 // Integers for displaying the amount of pixels the screen should take up.
@@ -60,20 +60,21 @@ int maxDiamonds = 0;
 boolean isSpacebarActionable = true;
 // Display if the player can still play the game or not.  
 boolean isGameOver = false;
+boolean isPaused = false;
 // Center coordinates of the screen
-int screenCenter_x;
-int screenCenter_y;
+int screenCenter_x = 0;
+int screenCenter_y = 0;
 // Maximum amount of cells that can fit on the screen
-int maxCells_x;
-int maxCells_y;
+int maxCells_x = 0;
+int maxCells_y = 0;
 // Keep track of level size
 int levelSize_x = 0;
 int levelSize_y = 0;
 int levelSizePx_x = TARGET_DISPLAY_WIDTH;
 int levelSizePx_y = TARGET_DISPLAY_HEIGHT;
 // Define the size of the zones (from edges of viewport) in which the level will scroll
-float shiftZone_x;
-float shiftZone_y;
+float shiftZone_x = 0;
+float shiftZone_y = 0;
 // Offsets for the viewport
 float offset_x = BASE_OFFSET_X;
 float offset_y = BASE_OFFSET_Y;
@@ -84,18 +85,16 @@ boolean enablePillarBoxing = false;
 boolean enableLetterBoxing = false;
 // Background Color
 color backgroundColor = color(55,44,44);
-// Boolean used to display if the player is still on the map(delete in the final version)
-boolean falllenOfMap;
 // Spawn point of player
-float playerSpawnX;
-float playerSpawnY;
+float playerSpawnX = DEFAULT_PLAYER_X;
+float playerSpawnY = DEFAULT_PLAYER_Y;
 
 // Mouse position in relation to the level
-float realMouseX;
-float realMouseY;
+float offsetMouseX = 0;
+float offsetMouseY = 0;
 // Moouse position from the previous frame
-float realMousePrevX;
-float realMousePrevY;
+float offsetMousePrevX = 0;
+float offsetMousePrevY = 0;
 
 // Graphics buffers
 PGraphics levelBuffer;

@@ -72,28 +72,23 @@ public void draw() {
     return;
   }
 
-  // Calculations before display
-  resolveInput();
-  collectDiamond();
-  progressMovement();
-  calculateOffset();
-  
-  // Display stuff
-  imageMode(CORNER);
-  image(backgroundBuffer, 0, 0);
-  image(levelBuffer, -offset_x, -offset_y);
-  imageMode(CENTER);
-  drawSprites();
-  drawDebugText();
-
-  // Calculations after display
-  if (checkOutOfBounds(player)) {
-    resetLevel();
+  // Run & display pause menu
+  if (isPaused) {
+    doMenuTick();
+    displayMenu();
+    return;
   }
+
+  // Run & display game
+  doGameTick();
+  displayLevel();
 }
 
 // Logic that runs every keypress (including repeats)
 public void keyPressed() {
+  // Prevent closing on ESC-press
+  key = 0;
+
   // Add key to queue if pressed, but not if it's already pressed
   for (int input : inputQueue) {
     if (input == keyCode) {
@@ -114,20 +109,16 @@ public void keyReleased() {
 
 // Logic that runs every mouse press
 public void mousePressed() {
-  realMouseX = mouseX + offset_x;
-  realMouseY = mouseY + offset_y;
-
-  // Left mouse button
-  if (mouseButton == 37) {
-    placePlatform(realMouseX, realMouseY);
-  }
+  offsetMouseX = mouseX + offset_x;
+  offsetMouseY = mouseY + offset_y;
 
   // Right mouse button
   if (mouseButton == 39){
-    realMousePrevX = realMouseX;
-    realMousePrevY = realMouseY;
-    inputQueue.add(-mouseButton); // Negating; conflicts with keyCode
+    offsetMousePrevX = offsetMouseX;
+    offsetMousePrevY = offsetMouseY;
   }
+
+  inputQueue.add(-mouseButton); // Negating; conflicts with keyCode
 }
 public void mouseReleased() {
   if (mouseButton == 39) {
@@ -136,57 +127,92 @@ public void mouseReleased() {
 }
 
 //// UTILITY FUNCTIONS ////
+// Advance game logic by 1 "tick"
+public void doGameTick() {
+  resolveInput();
+  collectDiamond();
+  progressMovement();
+  calculateOffset();
+
+  if (checkOutOfBounds(player)) {
+    resetLevel();
+  }
+}
+
+// 
+public void doMenuTick() {
+
+}
+
+// Display the level in its current state
+public void displayLevel() {
+  imageMode(CORNER);
+  image(backgroundBuffer, 0, 0);
+  image(levelBuffer, -offset_x, -offset_y);
+  imageMode(CENTER);
+  drawSprites();
+  drawDebugText();
+}
+
+public void displayMenu() {
+
+}
+
+public void menuClick(float x, float y) {
+
+}
+
 // Perform actions based on currently pressed keys
 public void resolveInput() {
   boolean canMoveLR = true;
 
   for (int input : inputQueue) {
-    // Right(D and ->)
-    if (canMoveLR && (input == 68 || input == 39)) {
-      player.change_x = MOVE_SPEED;
-      canMoveLR = false;
-    }
-    // Left (A and <-)
-    else if (canMoveLR && (input == 65 || input == 37)) {
-      player.change_x = -MOVE_SPEED;
-      canMoveLR = false;
-    }
-    // Spacebar (only count first press if not yet released)
-    else if (isSpacebarActionable && input == 32) {
-      // On ground; jump
-      if (isLanded(player, collidables)) {
-        isSpacebarActionable = false;
-        player.change_y = -JUMP_SPEED;
-      }
-      // In air, attempt to place platform
-      else if (placePlatform(player.center_x, player.bottom + 16)) {
-        isSpacebarActionable = false;
-      }
-    }
-    // Right mouse button (remove platform)
-    else if (input == -39) {
-      ArrayList<Sprite> removalList = new ArrayList<>();
-      realMouseX = mouseX + offset_x;
-      realMouseY = mouseY + offset_y;
-
-      for (Sprite platform : playerPlatforms) {
-        if (
-            // Mouse is inside platform
-            (realMouseX > platform.left && realMouseX < platform.right && realMouseY > platform.top && realMouseY < platform.bottom)
-            // Mouse went over the platform
-            || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, platform.right, platform.top, platform.right, platform.bottom)
-            || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, platform.right, platform.top, platform.left, platform.top)
-            || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, platform.left, platform.bottom, platform.left, platform.top)
-            || checkLineCollision(realMouseX, realMouseY, realMousePrevX, realMousePrevY, platform.left, platform.bottom, platform.right, platform.bottom)
-          ) {
-            removalList.add(platform);
+    switch (input) {
+      // Right(D and ->)
+      case 39:
+      case 68:
+        if (canMoveLR) {
+          player.change_x = MOVE_SPEED;
+          canMoveLR = false;
         }
-      }
-      for (Sprite platform : removalList) {
-        removePlatform(platform);
-      }
-      realMousePrevX = realMouseX;
-      realMousePrevY = realMouseY;
+        break;
+      // Left (A and <-)
+      case 65:
+      case 37:
+        if (canMoveLR) {
+          player.change_x = -MOVE_SPEED;
+          canMoveLR = false;
+        }
+        break;
+      // Spacebar
+      case 32:
+        // Only count first press if not yet released
+        if (isSpacebarActionable) {
+          // On ground; jump
+          if (isLanded(player, collidables)) {
+            isSpacebarActionable = false;
+            player.change_y = -JUMP_SPEED;
+          }
+          // In air, attempt to place platform
+          else if (placePlatform(player.center_x, player.bottom + 16)) {
+            isSpacebarActionable = false;
+          }
+        }
+        break;
+      // ESC
+      case 27:
+        isPaused = true;
+        break;
+
+      // Left mouse button
+      case -37:
+        menuClick(mouseX, mouseY);
+        placePlatform(offsetMouseX, offsetMouseY);
+        break;
+      // Right mouse button (remove platform)
+      case -39:
+        removePlatformWithMouse();
+        break;
     }
   }
   // Stop left-right movement if no such key is pressed
@@ -220,6 +246,30 @@ public boolean placePlatform(float x, float y) {
 public void removePlatform(Sprite playerPlatform) {
   playerPlatforms.remove(playerPlatform);
   collidables.remove(playerPlatform);
+}
+public void removePlatformWithMouse() {
+  ArrayList<Sprite> removalList = new ArrayList<>();
+  offsetMouseX = mouseX + offset_x;
+  offsetMouseY = mouseY + offset_y;
+
+  for (Sprite platform : playerPlatforms) {
+    if (
+        // Mouse is inside platform
+        (offsetMouseX > platform.left && offsetMouseX < platform.right && offsetMouseY > platform.top && offsetMouseY < platform.bottom)
+        // Mouse went over the platform
+        || checkLineCollision(offsetMouseX, offsetMouseY, offsetMousePrevX, offsetMousePrevY, platform.right, platform.top, platform.right, platform.bottom)
+        || checkLineCollision(offsetMouseX, offsetMouseY, offsetMousePrevX, offsetMousePrevY, platform.right, platform.top, platform.left, platform.top)
+        || checkLineCollision(offsetMouseX, offsetMouseY, offsetMousePrevX, offsetMousePrevY, platform.left, platform.bottom, platform.left, platform.top)
+        || checkLineCollision(offsetMouseX, offsetMouseY, offsetMousePrevX, offsetMousePrevY, platform.left, platform.bottom, platform.right, platform.bottom)
+      ) {
+        removalList.add(platform);
+    }
+  }
+  for (Sprite platform : removalList) {
+    removePlatform(platform);
+  }
+  offsetMousePrevX = offsetMouseX;
+  offsetMousePrevY = offsetMouseY;
 }
 
 // Checks if `sprite` is directly on top of any items in `platforms`
@@ -260,7 +310,6 @@ public void drawDebugText() {
     "Direction: " + player.direction,
     "Change_X: " + player.change_x,
     "World collision debug: ",
-    "fallenOfTheMap: " + falllenOfMap,
     "Ground Level: " + levelSizePx_x
   };
 
@@ -468,10 +517,16 @@ public void unloadLevel() {
 // Reset level to base
 public void resetLevel() {
   resetPlayer();
+  
   for (Sprite diamond : collected_diamonds) {
     diamonds.add(diamond);
   }
   collected_diamonds.clear();
+
+  for (Sprite platform : playerPlatforms) {
+    collidables.remove(platform);
+  }
+  playerPlatforms.clear();
 }
 
 // Generate buffer image for the static parts of the level
