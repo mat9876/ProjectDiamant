@@ -56,7 +56,6 @@ public void setup() {
 
   // Spawn the player in game
   player = new Player(player_stand_img, player_move_img, player_jump_img, 3.0);
-  
 
   // Load the first level at the start of the program or next level after collecting the max amount of diamonds.
   loadLevel(levelNum);
@@ -75,6 +74,7 @@ public void draw() {
   // Run & display pause menu
   if (isPaused) {
     doMenuTick();
+    displayLevel();
     displayMenu();
     return;
   }
@@ -121,15 +121,13 @@ public void mousePressed() {
   inputQueue.add(-mouseButton); // Negating; conflicts with keyCode
 }
 public void mouseReleased() {
-  if (mouseButton == 39) {
-    inputQueue.remove((Integer) (-mouseButton));
-  }
+  inputQueue.remove((Integer) (-mouseButton));
 }
 
 //// UTILITY FUNCTIONS ////
 // Advance game logic by 1 "tick"
 public void doGameTick() {
-  resolveInput();
+  resolveGameInput();
   collectDiamond();
   progressMovement();
   calculateOffset();
@@ -139,9 +137,9 @@ public void doGameTick() {
   }
 }
 
-// 
+// Resolve menu logic
 public void doMenuTick() {
-
+  resolveMenuInput();
 }
 
 // Display the level in its current state
@@ -154,17 +152,30 @@ public void displayLevel() {
   drawDebugText();
 }
 
+// Display active menus
 public void displayMenu() {
-
-}
-
-public void menuClick(float x, float y) {
-
+  if (startMenu.isActive) {
+    startMenu.display();
+    return;
+  }
+  if (pauseMenu.isActive) {
+    pauseMenu.display();
+    return;
+  }
+  if (completeMenu.isActive) {
+    completeMenu.display();
+    return;
+  }
+  if (endMenu.isActive) {
+    endMenu.display();
+    return;
+  }
 }
 
 // Perform actions based on currently pressed keys
-public void resolveInput() {
+public void resolveGameInput() {
   boolean canMoveLR = true;
+  ArrayList<Integer> removalList = new ArrayList<>();
 
   for (int input : inputQueue) {
     switch (input) {
@@ -202,12 +213,13 @@ public void resolveInput() {
       // ESC
       case 27:
         isPaused = true;
+        removalList.add(input);
         break;
 
       // Left mouse button
       case -37:
-        menuClick(mouseX, mouseY);
         placePlatform(offsetMouseX, offsetMouseY);
+        removalList.add(input);
         break;
       // Right mouse button (remove platform)
       case -39:
@@ -218,6 +230,41 @@ public void resolveInput() {
   // Stop left-right movement if no such key is pressed
   if (canMoveLR) {
     player.change_x = 0;
+  }
+
+  for (Integer k : removalList) {
+    inputQueue.remove(k);
+  }
+}
+
+// Perform menu actions based on pressed keys
+public void resolveMenuInput() {
+  ArrayList<Integer> removalList = new ArrayList<>();
+  
+  for (int input : inputQueue) {
+    removalList.add(input);
+
+    switch (input) {
+      // ESC / Right mouse button (return)
+      case 27:
+      case -39:
+        break;
+      // Left mouse button (interact)
+      case -37:
+        if (startMenu.isActive) startMenu.processClick(mouseX, mouseY);
+        if (pauseMenu.isActive) pauseMenu.processClick(mouseX, mouseY);
+        if (completeMenu.isActive) completeMenu.processClick(mouseX, mouseY);
+        if (endMenu.isActive) endMenu.processClick(mouseX, mouseY);
+        break;
+      // - (temporary exit)
+      case 45:
+        exit();
+        break;
+    }
+  }
+
+  for (Integer k : removalList) {
+    inputQueue.remove(k);
   }
 }
 

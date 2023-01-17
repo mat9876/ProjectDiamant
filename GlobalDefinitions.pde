@@ -100,6 +100,12 @@ float offsetMousePrevY = 0;
 PGraphics levelBuffer;
 PGraphics backgroundBuffer;
 
+// Menus
+StartMenu startMenu;
+PauseMenu pauseMenu;
+CompleteMenu completeMenu;
+EndMenu endMenu;
+
 // Load sound effects in memory
 SoundFile fail;
 SoundFile success;
