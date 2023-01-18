@@ -54,6 +54,13 @@ public void setup() {
   diamond_img = loadImage("Diamond.png");
   playerPlatform_img = loadImage("PlayerPlatform0.png");
 
+  // Initialise menus
+  startMenu = new StartMenu();
+  pauseMenu = new PauseMenu();
+  completeMenu = new CompleteMenu();
+  endMenu = new EndMenu();
+  activeMenu = startMenu;
+
   // Spawn the player in game
   player = new Player(player_stand_img, player_move_img, player_jump_img, 3.0);
 
@@ -154,22 +161,7 @@ public void displayLevel() {
 
 // Display active menus
 public void displayMenu() {
-  if (startMenu.isActive) {
-    startMenu.display();
-    return;
-  }
-  if (pauseMenu.isActive) {
-    pauseMenu.display();
-    return;
-  }
-  if (completeMenu.isActive) {
-    completeMenu.display();
-    return;
-  }
-  if (endMenu.isActive) {
-    endMenu.display();
-    return;
-  }
+  activeMenu.display(screenCenter_x, screenCenter_y);
 }
 
 // Perform actions based on currently pressed keys
@@ -248,13 +240,11 @@ public void resolveMenuInput() {
       // ESC / Right mouse button (return)
       case 27:
       case -39:
+        isPaused = false;
         break;
       // Left mouse button (interact)
       case -37:
-        if (startMenu.isActive) startMenu.processClick(mouseX, mouseY);
-        if (pauseMenu.isActive) pauseMenu.processClick(mouseX, mouseY);
-        if (completeMenu.isActive) completeMenu.processClick(mouseX, mouseY);
-        if (endMenu.isActive) endMenu.processClick(mouseX, mouseY);
+        activeMenu.processClick(mouseX, mouseY);
         break;
       // - (temporary exit)
       case 45:
@@ -333,6 +323,7 @@ public boolean isLanded(Sprite sprite, ArrayList<Sprite>platforms) {
 
 public void drawDebugText() {
   textSize(24);
+  textAlign(LEFT, TOP);
   fill(0, 408, 612);
 
   String iQueue = "";

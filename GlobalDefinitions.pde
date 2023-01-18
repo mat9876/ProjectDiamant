@@ -107,6 +107,8 @@ PauseMenu pauseMenu;
 CompleteMenu completeMenu;
 EndMenu endMenu;
 
+MenuInterface activeMenu;
+
 // Load sound effects in memory
 SoundFile fail;
 SoundFile success;
