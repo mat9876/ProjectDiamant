@@ -85,6 +85,7 @@ boolean enablePillarBoxing = false;
 boolean enableLetterBoxing = false;
 // Background Color
 color backgroundColor = color(55,44,44);
+PImage bg;
 // Spawn point of player
 float playerSpawnX = DEFAULT_PLAYER_X;
 float playerSpawnY = DEFAULT_PLAYER_Y;
