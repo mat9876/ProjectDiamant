@@ -31,9 +31,6 @@ public void setup() {
   endMenu = new Menu();
   activeMenu = pauseMenu; // CHANGE THIS TO STARTMENU ONCE DONE
 
-  // Spawn the player in game
-  player = new Player(player_stand_img, player_move_img, player_jump_img, 3.0)
-
   // Load the first level at the start of the program or next level after collecting the max amount of diamonds.
   loadLevel(levelNum);
 }
