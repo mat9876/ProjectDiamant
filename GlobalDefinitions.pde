@@ -1,12 +1,9 @@
-// Import logic for sound effects
+//// MODULES ////
 import processing.sound.SoundFile;
 import processing.javafx.PGraphicsFX2D;
 
 //// GLOBAL DEFINITIONS ////
-// Integers for displaying the amount of pixels the screen should take up.
-final static int TARGET_DISPLAY_WIDTH = 1920;
-final static int TARGET_DISPLAY_HEIGHT = 1080;
-// Integers for displaying the amount of frames per second during testing fase(Delete in the final version).
+// Desired framerate whereby the game will run at full speed
 final static int TARGET_FRAMERATE = 60;
 
 // Alignment / Scaling
@@ -70,8 +67,8 @@ int maxCells_y = 0;
 // Keep track of level size
 int levelSize_x = 0;
 int levelSize_y = 0;
-int levelSizePx_x = TARGET_DISPLAY_WIDTH;
-int levelSizePx_y = TARGET_DISPLAY_HEIGHT;
+int levelSizePx_x = 0;
+int levelSizePx_y = 0;
 // Define the size of the zones (from edges of viewport) in which the level will scroll
 float shiftZone_x = 0;
 float shiftZone_y = 0;

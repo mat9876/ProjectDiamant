@@ -12,7 +12,7 @@ public void settings() {
 // Logic that should run at start-up of the program
 public void setup() {
   background(0); // Avoid flashbanging the user
-  frameRate(60);
+  frameRate(TARGET_FRAMERATE);
   imageMode(CENTER);
   // Load the assist while playing a game.
   loadAssest();
@@ -29,6 +29,7 @@ public void draw() {
   // Stop if there's no map loaded
   if (noMap) {
     noMap();
+    return;
   }
 
   // Run & display pause menu
@@ -375,11 +376,6 @@ public void progressMovement() {
   if (player.top < 0) {
     player.setTop(0);
   }
-   Leave bottom of level open
-  else if (player.bottom > levelSizePx_y) {
-    player.setBottom(levelSizePx_y);
-  }
-  
 }
 
 // Run a simple check for collision to make platforms solid.
@@ -676,9 +672,8 @@ public void loadAssest() {
 }
 public void noMap() {
   noLoop();
-    background(backgroundColor);
-    text(String.format("\"map_%02d.csv\" could not be loaded.", levelNum), LEFT_MARGIN, VERTICAL_MARGIN);
-    return;
+  background(backgroundColor);
+  text(String.format("\"map_%02d.csv\" could not be loaded.", levelNum), LEFT_MARGIN, VERTICAL_MARGIN);
 }
 public void loadMouse() {
   mouseCursor = loadImage("Cursor.png");
