@@ -1,3 +1,4 @@
+
 //// PROCESSING EVENTS ////
 // Logic that should run at start-up but cannot be run in `setup()`
 public void settings() {
@@ -5,16 +6,6 @@ public void settings() {
   System.setProperty("prism.allowhidpi", "false");
 
   // Open in windowed mode if screen is larger than display, fullscreen if not.
-  /*
-  if (displayWidth > TARGET_DISPLAY_WIDTH || displayHeight > TARGET_DISPLAY_HEIGHT) {
-    //size(1280, 720, P2D);
-    size(TARGET_DISPLAY_WIDTH, TARGET_DISPLAY_HEIGHT, P2D);
-  }
-  else {
-    fullScreen(P2D);
-  }
-  */
-
   fullScreen(FX2D);
 }
 
@@ -23,36 +14,11 @@ public void setup() {
   background(0); // Avoid flashbanging the user
   frameRate(TARGET_FRAMERATE);
   imageMode(CENTER);
+  // Load the assist while playing a game.
+  loadAssest();
 
-  // Define center of screen
-  screenCenter_x = pixelWidth / 2;
-  screenCenter_y = pixelHeight / 2;
-
-  // Initialise buffers with static size
-  backgroundBuffer = createGraphics(pixelWidth, pixelHeight);
-
-  //Define sound effects for use.
-  fail = new SoundFile(this, "fail.wav");
-  success = new SoundFile(this, "Success.wav");
-
-  // Determine max amount of cells that the current screen resolution can display
-  maxCells_x = pixelWidth / CELL_SIZE + 1;
-  maxCells_y = pixelHeight / CELL_SIZE + 1;
-
-  // Determine viewport shift bounds
-  shiftZone_x = pixelWidth / 3;
-  shiftZone_y = pixelHeight / 3;
-  
-  // Load the assest related to the playable character
-  PImage[] player_stand_img = {loadImage("YSquare.png")};
-  PImage[] player_move_img = {loadImage("YSquare_1.png"), loadImage("YSquare_2.png")};
-  PImage[] player_jump_img = {loadImage("YSquare_Jump.png")};
-  
-  
-  // Load the different assets used during the game.
-  square_img = loadImage("Square.png");
-  diamond_img = loadImage("Diamond.png");
-  playerPlatform_img = loadImage("PlayerPlatform0.png");
+  // Define a player and the assists that need to be loaded.
+  definePlayer();
 
   // Initialise menus
   startMenu = new Menu();
@@ -66,7 +32,7 @@ public void setup() {
   activeMenu = pauseMenu; // CHANGE THIS TO STARTMENU ONCE DONE
 
   // Spawn the player in game
-  player = new Player(player_stand_img, player_move_img, player_jump_img, 3.0);
+  player = new Player(player_stand_img, player_move_img, player_jump_img, 3.0)
 
   // Load the first level at the start of the program or next level after collecting the max amount of diamonds.
   loadLevel(levelNum);
@@ -76,9 +42,7 @@ public void setup() {
 public void draw() {
   // Stop if there's no map loaded
   if (noMap) {
-    noLoop();
-    background(backgroundColor);
-    text(String.format("\"map_%02d.csv\" could not be loaded.", levelNum), LEFT_MARGIN, VERTICAL_MARGIN);
+    noMap();
     return;
   }
 
@@ -161,6 +125,7 @@ public void displayLevel() {
   imageMode(CENTER);
   drawSprites();
   drawDebugText();
+  loadMouse();
 }
 
 // Display active menus
@@ -411,11 +376,6 @@ public void progressMovement() {
   if (player.top < 0) {
     player.setTop(0);
   }
-  /* Leave bottom of level open
-  else if (player.bottom > levelSizePx_y) {
-    player.setBottom(levelSizePx_y);
-  }
-  */
 }
 
 // Run a simple check for collision to make platforms solid.
@@ -596,6 +556,7 @@ public void generateBackgroundBuffer() {
 
 // Reset the player position when the level is loaded(Also used when a player falls off the map)
 public void resetPlayer() {
+  loadMouse();
   player.setCenter(playerSpawnX, playerSpawnY);
   player.change_x = 0;
   player.change_y = 0;
@@ -673,4 +634,48 @@ boolean checkLineCollision(float x1a, float y1a, float x1b, float y1b, float x2a
   float r = numerator1 / denominator;
   float s = numerator2 / denominator;
   return ((r >= 0 && r <= 1) && (s >= 0 && s <= 1));
+}
+public void definePlayer(){
+   // Load the assest related to the playable character
+  PImage[] player_stand_img = {loadImage("YSquare.png")};
+  PImage[] player_move_img = {loadImage("YSquare_1.png"), loadImage("YSquare_2.png")};
+  PImage[] player_jump_img = {loadImage("YSquare_Jump.png")};
+  
+  
+  // Load the different assets used during the game.
+  square_img = loadImage("Square.png");
+  diamond_img = loadImage("Diamond.png");
+  playerPlatform_img = loadImage("PlayerPlatform0.png");
+
+  // Spawn the player in game
+  player = new Player(player_stand_img, player_move_img, player_jump_img, 3.0); 
+}
+public void loadAssest() {
+  // Define center of screen
+  screenCenter_x = pixelWidth / 2;
+  screenCenter_y = pixelHeight / 2;
+
+  // Initialise buffers with static size
+  backgroundBuffer = createGraphics(pixelWidth, pixelHeight);
+
+  //Define sound effects for use.
+  fail = new SoundFile(this, "fail.wav");
+  success = new SoundFile(this, "Success.wav");
+
+  // Determine max amount of cells that the current screen resolution can display
+  maxCells_x = pixelWidth / CELL_SIZE + 1;
+  maxCells_y = pixelHeight / CELL_SIZE + 1;
+
+  // Determine viewport shift bounds
+  shiftZone_x = pixelWidth / 3;
+  shiftZone_y = pixelHeight / 3;
+}
+public void noMap() {
+  noLoop();
+  background(backgroundColor);
+  text(String.format("\"map_%02d.csv\" could not be loaded.", levelNum), LEFT_MARGIN, VERTICAL_MARGIN);
+}
+public void loadMouse() {
+  mouseCursor = loadImage("Cursor.png");
+  cursor(mouseCursor);
 }
