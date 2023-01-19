@@ -91,23 +91,23 @@ float playerSpawnX = DEFAULT_PLAYER_X;
 float playerSpawnY = DEFAULT_PLAYER_Y;
 
 // Mouse position in relation to the level
-float offsetMouseX = 0;
-float offsetMouseY = 0;
+int offsetMouseX = 0;
+int offsetMouseY = 0;
 // Moouse position from the previous frame
-float offsetMousePrevX = 0;
-float offsetMousePrevY = 0;
+int offsetMousePrevX = 0;
+int offsetMousePrevY = 0;
 
 // Graphics buffers
 PGraphics levelBuffer;
 PGraphics backgroundBuffer;
 
 // Menus
-StartMenu startMenu;
-PauseMenu pauseMenu;
-CompleteMenu completeMenu;
-EndMenu endMenu;
+Menu startMenu;
+Menu pauseMenu;
+Menu completeMenu;
+Menu endMenu;
 
-MenuInterface activeMenu;
+Menu activeMenu;
 
 // Load sound effects in memory
 SoundFile fail;

@@ -55,11 +55,15 @@ public void setup() {
   playerPlatform_img = loadImage("PlayerPlatform0.png");
 
   // Initialise menus
-  startMenu = new StartMenu();
-  pauseMenu = new PauseMenu();
-  completeMenu = new CompleteMenu();
-  endMenu = new EndMenu();
-  activeMenu = startMenu;
+  startMenu = new Menu();
+  pauseMenu = new Menu(
+    new ResumeButtonItem(),
+    new ResetButtonItem(),
+    new ExitButtonItem()
+  );
+  completeMenu = new Menu();
+  endMenu = new Menu();
+  activeMenu = pauseMenu; // CHANGE THIS TO STARTMENU ONCE DONE
 
   // Spawn the player in game
   player = new Player(player_stand_img, player_move_img, player_jump_img, 3.0);
@@ -116,8 +120,8 @@ public void keyReleased() {
 
 // Logic that runs every mouse press
 public void mousePressed() {
-  offsetMouseX = mouseX + offset_x;
-  offsetMouseY = mouseY + offset_y;
+  offsetMouseX = mouseX + (int) offset_x;
+  offsetMouseY = mouseY + (int) offset_y;
 
   // Right mouse button
   if (mouseButton == 39){
@@ -240,7 +244,9 @@ public void resolveMenuInput() {
       // ESC / Right mouse button (return)
       case 27:
       case -39:
-        isPaused = false;
+        if (!activeMenu.up()) {
+          isPaused = false;
+        }
         break;
       // Left mouse button (interact)
       case -37:
@@ -286,8 +292,8 @@ public void removePlatform(Sprite playerPlatform) {
 }
 public void removePlatformWithMouse() {
   ArrayList<Sprite> removalList = new ArrayList<>();
-  offsetMouseX = mouseX + offset_x;
-  offsetMouseY = mouseY + offset_y;
+  offsetMouseX = mouseX + (int) offset_x;
+  offsetMouseY = mouseY + (int) offset_y;
 
   for (Sprite platform : playerPlatforms) {
     if (

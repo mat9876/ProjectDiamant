@@ -1,14 +1,7 @@
-public interface MenuInterface {
-  void display(float x, float y);
-  void updateBuffer();
-  void processClick(float x, float y);
-  void deactivate();
-  boolean up();
-}
-
-public class Menu implements MenuInterface {
+public class Menu {
   private PGraphics buffer;
-  public ArrayList<MenuItem> items;
+  private int[][] menuItemsBounds;
+  public MenuItem[] menuItems;
 
   public ArrayList<Integer> state;
   public int margin_x = 50;
@@ -20,25 +13,35 @@ public class Menu implements MenuInterface {
 
   public color backgroundColor;
 
-  public Menu() {
-    items = new ArrayList<>();
+  public Menu(MenuItem... items) {
+    menuItems = items;
     state = new ArrayList<>();
-
-    // TODO: Remove (temp. for test)
-    items.add(new ResumeButtonItem());
-    items.add(new ExitButtonItem());
+    menuItemsBounds = new int[4][menuItems.length];
 
     int max_x = 0;
-    for (MenuItem item : items) {
-      if (item.getSize_x() > max_x) {
-        max_x = item.getSize_x();
+    int menuItemPos_y = margin_y;
+    for (int i = 0; i < menuItems.length; i++) {
+      // Determine maximum width
+      if (menuItems[i].getSize_x() > max_x) {
+        max_x = menuItems[i].getSize_x();
       }
 
-      size_y += item.getSize_y();
+      // Set y-coordinates of top & bottom edges of the item
+      menuItemsBounds[2][i] = menuItemPos_y;
+      menuItemsBounds[3][i] = menuItemsBounds[2][i] + menuItems[i].getSize_y();
+
+      size_y += menuItems[i].getSize_y();
+      menuItemPos_y += menuItems[i].getSize_y() + padding_y;
+    }
+
+    for (int i = 0; i < menuItems.length; i++) {
+      // Set x-coordinates of left & right edges of the item
+      menuItemsBounds[0][i] = max_x - menuItems[i].getSize_x() + margin_x;
+      menuItemsBounds[1][i] = menuItemsBounds[0][i] + menuItems[i].getSize_x();
     }
 
     size_x += max_x;
-    size_y += (items.size() - 1) * padding_y;
+    size_y += (menuItems.length - 1) * padding_y;
 
     backgroundColor = color(0,0,0);
 
@@ -55,18 +58,26 @@ public class Menu implements MenuInterface {
 
     buffer.beginDraw();
     buffer.imageMode(CORNER);
-
     buffer.background(backgroundColor);
-
-    for (int i = 0; i < items.size(); i++) {
-      buffer.image(items.get(i).getBuffer(), margin_x, menuItemPos_y);
-      menuItemPos_y += items.get(i).getSize_y() + padding_y;
+    for (int i = 0; i < menuItems.length; i++) {
+      buffer.image(menuItems[i].getBuffer(), menuItemsBounds[0][i], menuItemsBounds[2][i]);
     }
     buffer.endDraw();
   }
 
-  public void processClick(float x, float y) {
-    // TODO: process click logic
+  public void processClick(int x, int y) {
+    // Get mouse position relative to the menu
+    float menuMouseX = x - screenCenter_x + (size_x / 2);
+    float menuMouseY = y - screenCenter_y + (size_y / 2);
+    for (int i = 0; i < menuItems.length; i++) {
+      if (
+        menuMouseX > menuItemsBounds[0][i] && menuMouseX < menuItemsBounds[1][i]
+        && menuMouseY > menuItemsBounds[2][i] && menuMouseY < menuItemsBounds[3][i]
+      ) {
+        menuItems[i].click();
+        return;
+      }
+    }
   }
 
   // Step back from a submenu
@@ -75,27 +86,12 @@ public class Menu implements MenuInterface {
     if (state.size() == 0) {
       return false;
     }
-    // TODO
+    // Expand if multiple levels are needed
     return true;
   }
 
   public void deactivate() {
     state.clear();
+    isPaused = false;
   }
-}
-
-public class StartMenu extends PauseMenu {
-  // TODO: start menu
-}
-
-public class PauseMenu extends Menu {
-  // TODO: pause menu
-}
-
-public class CompleteMenu extends Menu {
-  // TODO: in-between menu
-}
-
-public class EndMenu extends Menu {
-  // TODO: end menu
 }

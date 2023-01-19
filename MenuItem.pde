@@ -77,7 +77,6 @@ public class ResumeButtonItem extends ButtonItem {
 
   @Override
   public void click() {
-    isPaused = false;
     activeMenu.deactivate();
   }
 }
@@ -90,5 +89,17 @@ public class ExitButtonItem extends ButtonItem {
   @Override
   public void click() {
     exit();
+  }
+}
+
+public class ResetButtonItem extends ButtonItem {
+  public ResetButtonItem() {
+    super("Reset");
+  }
+
+  @Override
+  public void click() {
+    resetLevel();
+    activeMenu.deactivate();
   }
 }
