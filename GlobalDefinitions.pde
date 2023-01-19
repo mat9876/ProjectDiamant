@@ -85,7 +85,7 @@ boolean enablePillarBoxing = false;
 boolean enableLetterBoxing = false;
 // Background Color
 color backgroundColor = color(55,44,44);
-PImage bg;
+PImage backGroundImage;
 // Spawn point of player
 float playerSpawnX = DEFAULT_PLAYER_X;
 float playerSpawnY = DEFAULT_PLAYER_Y;
@@ -101,11 +101,14 @@ float offsetMousePrevY = 0;
 PGraphics levelBuffer;
 PGraphics backgroundBuffer;
 
+// Load image off the custom cursor in memory;
+PImage mouseCursor;
+
 // Menus
-StartMenu startMenu;
+ StartMenu startMenu;
 PauseMenu pauseMenu;
 CompleteMenu completeMenu;
-EndMenu endMenu;
+EndMenu endMenu; 
 
 // Load sound effects in memory
 SoundFile fail;
