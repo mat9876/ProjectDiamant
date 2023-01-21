@@ -110,7 +110,7 @@ public void doMenuTick() {
 public void displayLevel() {
   imageMode(CORNER);
   // image(backgroundBuffer, 0, 0);
-  image(backgroundImage, 0, 0);
+  image(backgroundImage, 0, 0, pixelWidth, pixelHeight);
   image(levelBuffer, -offset_x, -offset_y);
   imageMode(CENTER);
   drawSprites();
@@ -495,8 +495,8 @@ public void loadLevel(int levelNum) {
   enableScrollingY = levelSize_y > maxCells_y;
 
   // Determine whether to enable boxing
-  enablePillarBoxing = pixelWidth > levelSize_x; 
-  enableLetterBoxing = pixelHeight > levelSize_y;
+  enablePillarBoxing = pixelWidth > levelSizePx_x; 
+  enableLetterBoxing = pixelHeight > levelSizePx_y;
 
   // Center the viewport if level scrolling is not enabled
   if (!enableScrollingX) {
@@ -567,13 +567,13 @@ public void generateLetterPillarBoxes() {
     letterPillarBoxesBuffer.noStroke();
     letterPillarBoxesBuffer.fill(0);
 
-    if (enableLetterBoxing) {
+    if (enablePillarBoxing) {
       // left
       letterPillarBoxesBuffer.rect(0, 0, (pixelWidth - levelSizePx_x) / 2, pixelHeight);
       // right
       letterPillarBoxesBuffer.rect(pixelWidth - (pixelWidth - levelSizePx_x) / 2, 0, pixelWidth, pixelHeight);
     }
-    if (enablePillarBoxing) {
+    if (enableLetterBoxing) {
       // top
       letterPillarBoxesBuffer.rect(0, 0, pixelWidth, (pixelHeight - levelSizePx_y) / 2);
       // bottom
@@ -688,7 +688,6 @@ public void loadAssest() {
   letterPillarBoxesBuffer = createGraphics(pixelWidth, pixelHeight);
 
   backgroundImage = loadImage("Background_00.png");
-  backgroundImage.resize(pixelWidth, pixelHeight);
 
   // Load the different assets used during the game.
   square_img = loadImage("Square.png");
