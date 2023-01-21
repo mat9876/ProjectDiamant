@@ -20,16 +20,7 @@ public void setup() {
   // Define a player and the assists that need to be loaded.
   definePlayer();
 
-  // Initialise menus
-  startMenu = new Menu();
-  pauseMenu = new Menu(
-    new ResumeButtonItem(),
-    new ResetButtonItem(),
-    new ExitButtonItem()
-  );
-  completeMenu = new Menu();
-  endMenu = new Menu();
-  activeMenu = pauseMenu; // CHANGE THIS TO STARTMENU ONCE DONE
+  initialiseMenus();
 
   // Load the first level at the start of the program or next level after collecting the max amount of diamonds.
   loadLevel(levelNum);
@@ -127,7 +118,7 @@ public void displayLevel() {
 
 // Display active menus
 public void displayMenu() {
-  activeMenu.display(screenCenter_x, screenCenter_y);
+  image(activeMenu.getBuffer(), screenCenter_x, screenCenter_y);
 }
 
 // Perform actions based on currently pressed keys
@@ -498,6 +489,7 @@ public void loadLevel(int levelNum) {
   }
 
   player.setCenter(playerSpawnX, playerSpawnY);
+  activeMenu = pauseMenu;
 
   // Generate image buffers
   generateLevelBuffer();
@@ -667,6 +659,21 @@ public void loadAssest() {
   shiftZone_x = pixelWidth / 3;
   shiftZone_y = pixelHeight / 3;
 }
+
+// Initialise menus
+public void initialiseMenus() {
+  startMenu = new Menu();
+  pauseMenu = new Menu(
+    new BackButtonItem("Resume"),
+    new ResetButtonItem("Reset"),
+    new ExitButtonItem("Exit")
+  );
+  completeMenu = new Menu();
+  endMenu = new Menu();
+
+  activeMenu = startMenu;
+}
+
 public void noMap() {
   noLoop();
   background(backgroundColor);

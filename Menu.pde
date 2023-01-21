@@ -2,20 +2,20 @@ public class Menu {
   private PGraphics buffer;
   private int[][] menuItemsBounds;
   public MenuItem[] menuItems;
+  public Menu prev = null;
 
-  public ArrayList<Integer> state;
-  public int margin_x = 50;
-  public int margin_y = 50;
-  public int padding_x = 20;
-  public int padding_y = 20;
+  public int margin_x = 32;
+  public int margin_y = 32;
+  public int padding_x = 16;
+  public int padding_y = 16;
+  public float cornerRoundnessFactor = 0.33;
+  public color backgroundColor = color(16,16,16,192);
+
   public int size_x = 2 * margin_x;
   public int size_y = 2 * margin_y;
 
-  public color backgroundColor;
-
   public Menu(MenuItem... items) {
     menuItems = items;
-    state = new ArrayList<>();
     menuItemsBounds = new int[4][menuItems.length];
 
     int max_x = 0;
@@ -43,32 +43,35 @@ public class Menu {
     size_x += max_x;
     size_y += (menuItems.length - 1) * padding_y;
 
-    backgroundColor = color(0,0,0);
-
     buffer = createGraphics(size_x, size_y);
     updateBuffer();
   }
 
-  public void display(float x, float y) {
-    image(buffer, x, y);
-  }
-
+  // Redraw the menu image buffer
   public void updateBuffer() {
     int menuItemPos_y = margin_y;
+    float cornerRoundnessPx = cornerRoundnessFactor * min(size_x, size_y) / 2;
 
     buffer.beginDraw();
-    buffer.imageMode(CORNER);
-    buffer.background(backgroundColor);
-    for (int i = 0; i < menuItems.length; i++) {
-      buffer.image(menuItems[i].getBuffer(), menuItemsBounds[0][i], menuItemsBounds[2][i]);
-    }
+      buffer.imageMode(CORNER);
+      buffer.noStroke();
+
+      buffer.fill(backgroundColor);
+      buffer.rect(0, 0, size_x, size_y, cornerRoundnessPx);
+
+      for (int i = 0; i < menuItems.length; i++) {
+        buffer.image(menuItems[i].getBuffer(), menuItemsBounds[0][i], menuItemsBounds[2][i]);
+      }
     buffer.endDraw();
   }
 
+  // Process a click
   public void processClick(int x, int y) {
     // Get mouse position relative to the menu
-    float menuMouseX = x - screenCenter_x + (size_x / 2);
-    float menuMouseY = y - screenCenter_y + (size_y / 2);
+    int menuMouseX = x - screenCenter_x + (size_x / 2);
+    int menuMouseY = y - screenCenter_y + (size_y / 2);
+
+    // Check if a menuItem has been clicked
     for (int i = 0; i < menuItems.length; i++) {
       if (
         menuMouseX > menuItemsBounds[0][i] && menuMouseX < menuItemsBounds[1][i]
@@ -80,18 +83,26 @@ public class Menu {
     }
   }
 
+  // Close this menu and all parent menus
+  public void close() {
+    if (!up()) {
+      isPaused = false;
+      return;
+    }
+    prev.close();
+  }
+
   // Step back from a submenu
   // Returns true if able, false if already at root
   public boolean up() {
-    if (state.size() == 0) {
+    if (prev == null) {
       return false;
     }
-    // Expand if multiple levels are needed
+    activeMenu = prev;
     return true;
   }
 
-  public void deactivate() {
-    state.clear();
-    isPaused = false;
+  public PGraphics getBuffer() {
+    return buffer;
   }
 }

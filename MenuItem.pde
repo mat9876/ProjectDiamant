@@ -17,39 +17,38 @@ public class TextItem implements MenuItem {
 // Base button class
 // Should be used only as a base; it has no functionality beyond that.
 public class ButtonItem implements MenuItem {
-  public String text;
-  public color textColor;
-  public color backgroundColor;
-  public float fontSize;
-
-  public int size_x;
-  public int size_y;
-  
   private PGraphics buffer;
+
+  public String text;
+
+  public float fontSize = 24;
+  public float cornerRoundnessFactor = 0.33;
+  public color textColor = color(255,255,255,255);
+  public color backgroundColor = color(64,64,64,192);
+
+  public int size_x = 192;
+  public int size_y = 64;
 
   public ButtonItem(String buttonText) {
     text = buttonText;
-    textColor = color(255,255,255);
-    backgroundColor = color(48,48,48);
-    fontSize = 24;
-
-    size_x = 256;
-    size_y = 92;
 
     buffer = createGraphics(size_x, size_y);
     updateBuffer();
   }
 
   public void updateBuffer() {
+    float cornerRoundnessPx = cornerRoundnessFactor * min(size_x, size_y) / 2;
+
     buffer.beginDraw();
+      buffer.noStroke();
+      buffer.textAlign(CENTER, CENTER);
+      buffer.textSize(fontSize);
 
-    buffer.textAlign(CENTER, CENTER);
-    buffer.textSize(fontSize);
-    buffer.fill(textColor);
+      buffer.fill(backgroundColor);
+      buffer.rect(0, 0, size_x, size_y, cornerRoundnessPx);
 
-    buffer.background(backgroundColor);
-    buffer.text(text, size_x/2, size_y/2);
-
+      buffer.fill(textColor);
+      buffer.text(text, size_x/2, size_y/2);
     buffer.endDraw();
   }
   
@@ -70,20 +69,22 @@ public class ButtonItem implements MenuItem {
   }
 }
 
-public class ResumeButtonItem extends ButtonItem {
-  public ResumeButtonItem() {
-    super("Resume");
+// Button for going back in a menu and/or closing the menu
+public class BackButtonItem extends ButtonItem {
+  public BackButtonItem(String buttonText) {
+    super(buttonText);
   }
 
   @Override
   public void click() {
-    activeMenu.deactivate();
+    activeMenu.up();
   }
 }
 
+// Button for exiting the game
 public class ExitButtonItem extends ButtonItem {
-  public ExitButtonItem() {
-    super("Exit");
+  public ExitButtonItem(String buttonText) {
+    super(buttonText);
   }
 
   @Override
@@ -92,14 +93,42 @@ public class ExitButtonItem extends ButtonItem {
   }
 }
 
+// Button for resetting the current level
 public class ResetButtonItem extends ButtonItem {
-  public ResetButtonItem() {
-    super("Reset");
+  public ResetButtonItem(String buttonText) {
+    super(buttonText);
   }
 
   @Override
   public void click() {
     resetLevel();
-    activeMenu.deactivate();
+    activeMenu.close();
+  }
+}
+
+/**
+ * Button for opening another menu.
+ * Proper initialisation of this button should look like this:
+ *   new SubmenuButtonItem(
+ *     "BUTTON_TEXT",
+ *     new Menu(
+ *       new ButtonItem("SUBMENU_BUTTON_TEXT")
+ *       new BackButtonItem("Back")
+ *     )
+ *   )
+ */
+public class SubmenuButtonItem extends ButtonItem {
+  Menu menu = null;
+
+  public SubmenuButtonItem(String buttonText, Menu submenu) {
+    super(buttonText);
+
+    menu = submenu;
+  }
+
+  @Override
+  public void click() {
+    menu.prev = activeMenu;
+    activeMenu = menu;
   }
 }
