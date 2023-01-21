@@ -85,17 +85,16 @@ public class Menu {
 
   // Close this menu and all parent menus
   public void close() {
-    if (!up()) {
-      isPaused = false;
-      return;
+    if (up()) {
+      prev.close();
     }
-    prev.close();
   }
 
   // Step back from a submenu
   // Returns true if able, false if already at root
   public boolean up() {
     if (prev == null) {
+      isPaused = false;
       return false;
     }
     activeMenu = prev;
