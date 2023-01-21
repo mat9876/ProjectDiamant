@@ -440,7 +440,6 @@ public void loadLevel(int levelNum) {
 
   // Load map file into memory
   String[] lines = loadStrings(String.format("map_%02d.csv", levelNum));
-  //String[] background = loadStrings(String.format("Background_%02d.png", levelNum));
 
   // Prevent loading if the file couldn't be read
   if (lines == null) {
@@ -654,9 +653,6 @@ public void definePlayer(){
   
   // Load the different assets used during the game.
   square_img = loadImage("Square.png");
- /* square_img1 = loadImage("Square01.png");
-  square_img2 = loadImage("Square02.png");
-  square_img3 = loadImage("Square03.png"); */
   diamond_img = loadImage("Diamond.png");
   spikes_img = loadImage("Spikes.png");
   mouseCursor = loadImage("Cursor.png");
