@@ -83,7 +83,7 @@ boolean enablePillarBoxing = false;
 boolean enableLetterBoxing = false;
 // Background Color
 color backgroundColor = color(55,44,44);
-PImage backGroundImage;
+PImage backgroundImage;
 // Spawn point of player
 float playerSpawnX = DEFAULT_PLAYER_X;
 float playerSpawnY = DEFAULT_PLAYER_Y;
@@ -98,6 +98,7 @@ int offsetMousePrevY = 0;
 // Graphics buffers
 PGraphics levelBuffer;
 PGraphics backgroundBuffer;
+PGraphics letterPillarBoxesBuffer;
 
 // Load image off the custom cursor in memory;
 PImage mouseCursor;

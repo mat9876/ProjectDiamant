@@ -27,7 +27,6 @@ public void setup() {
 
 // Logic that should run every frame 
 public void draw() {
-  background(backGroundImage);
   // Stop if there's no map loaded
   if (noMap) {
     noMap();
@@ -45,11 +44,7 @@ public void draw() {
   // Run & display game
   doGameTick();
   displayLevel();
-  cursor(mouseCursor);
   loadMouse();
-  
-  
-  
 }
 
 // Logic that runs every keypress (including repeats)
@@ -114,13 +109,15 @@ public void doMenuTick() {
 // Display the level in its current state
 public void displayLevel() {
   imageMode(CORNER);
-  image(backgroundBuffer, 0, 0);
+  // image(backgroundBuffer, 0, 0);
+  image(backgroundImage, 0, 0);
   image(levelBuffer, -offset_x, -offset_y);
   imageMode(CENTER);
   drawSprites();
+  imageMode(CORNER);
+  image(letterPillarBoxesBuffer, 0, 0);
+  imageMode(CENTER);
   drawDebugText();
-  
-  
 }
 
 // Display active menus
@@ -514,7 +511,8 @@ public void loadLevel(int levelNum) {
 
   // Generate image buffers
   generateLevelBuffer();
-  generateBackgroundBuffer();
+  // generateBackgroundBuffer();
+  generateLetterPillarBoxes();
 }
 
 // Completely unload (and reset) any and all data of the level
@@ -555,8 +553,33 @@ public void generateLevelBuffer() {
 
 // Generate buffer image for the background
 public void generateBackgroundBuffer() {
-  backGroundImage = loadImage("Background_00.png");
-  backGroundImage.resize(pixelWidth, pixelHeight);
+  backgroundBuffer.beginDraw();
+    backgroundBuffer.noStroke();
+    backgroundBuffer.fill(backgroundColor);
+    backgroundBuffer.background(0);
+    backgroundBuffer.rect((pixelWidth - levelSizePx_x) / 2, (pixelHeight - levelSizePx_y) / 2, levelSizePx_x, levelSizePx_y);
+  backgroundBuffer.endDraw();
+}
+
+// Generate buffer image for letter- and pillarboxes
+public void generateLetterPillarBoxes() {
+  letterPillarBoxesBuffer.beginDraw();
+    letterPillarBoxesBuffer.noStroke();
+    letterPillarBoxesBuffer.fill(0);
+
+    if (enableLetterBoxing) {
+      // left
+      letterPillarBoxesBuffer.rect(0, 0, (pixelWidth - levelSizePx_x) / 2, pixelHeight);
+      // right
+      letterPillarBoxesBuffer.rect(pixelWidth - (pixelWidth - levelSizePx_x) / 2, 0, pixelWidth, pixelHeight);
+    }
+    if (enablePillarBoxing) {
+      // top
+      letterPillarBoxesBuffer.rect(0, 0, pixelWidth, (pixelHeight - levelSizePx_y) / 2);
+      // bottom
+      letterPillarBoxesBuffer.rect(0, pixelHeight - (pixelHeight - levelSizePx_y) / 2, pixelWidth, pixelHeight);
+    }
+  letterPillarBoxesBuffer.endDraw();
 }
 
 // Reset the player position when the level is loaded(Also used when a player falls off the map)
@@ -644,24 +667,17 @@ boolean checkLineCollision(float x1a, float y1a, float x1b, float y1b, float x2a
   float s = numerator2 / denominator;
   return ((r >= 0 && r <= 1) && (s >= 0 && s <= 1));
 }
+
 public void definePlayer(){
    // Load the assest related to the playable character
   PImage[] player_stand_img = {loadImage("YSquare.png")};
   PImage[] player_move_img = {loadImage("YSquare_1.png"), loadImage("YSquare_2.png")};
   PImage[] player_jump_img = {loadImage("YSquare_Jump.png")};
-  
-  
-  // Load the different assets used during the game.
-  square_img = loadImage("Square.png");
-  diamond_img = loadImage("Diamond.png");
-  spikes_img = loadImage("Spikes.png");
-  mouseCursor = loadImage("Cursor.png");
-  playerPlatform_img = loadImage("PlayerPlatform0.png");
-  
 
   // Spawn the player in game
   player = new Player(player_stand_img, player_move_img, player_jump_img, 3.0); 
 }
+
 public void loadAssest() {
   // Define center of screen
   screenCenter_x = pixelWidth / 2;
@@ -669,6 +685,17 @@ public void loadAssest() {
 
   // Initialise buffers with static size
   backgroundBuffer = createGraphics(pixelWidth, pixelHeight);
+  letterPillarBoxesBuffer = createGraphics(pixelWidth, pixelHeight);
+
+  backgroundImage = loadImage("Background_00.png");
+  backgroundImage.resize(pixelWidth, pixelHeight);
+
+  // Load the different assets used during the game.
+  square_img = loadImage("Square.png");
+  diamond_img = loadImage("Diamond.png");
+  spikes_img = loadImage("Spikes.png");
+  mouseCursor = loadImage("Cursor.png");
+  playerPlatform_img = loadImage("PlayerPlatform0.png");
 
   //Define sound effects for use.
   fail = new SoundFile(this, "fail.wav");
@@ -681,6 +708,8 @@ public void loadAssest() {
   // Determine viewport shift bounds
   shiftZone_x = pixelWidth / 3;
   shiftZone_y = pixelHeight / 3;
+  
+  cursor(mouseCursor);
 }
 
 // Initialise menus
