@@ -1,4 +1,3 @@
-
 //// PROCESSING EVENTS ////
 // Logic that should run at start-up but cannot be run in `setup()`
 public void settings() {
@@ -37,6 +36,7 @@ public void setup() {
 
 // Logic that should run every frame 
 public void draw() {
+  background(backGroundImage);
   // Stop if there's no map loaded
   if (noMap) {
     noMap();
@@ -54,6 +54,11 @@ public void draw() {
   // Run & display game
   doGameTick();
   displayLevel();
+  cursor(mouseCursor);
+  loadMouse();
+  
+  
+  
 }
 
 // Logic that runs every keypress (including repeats)
@@ -101,6 +106,7 @@ public void mouseReleased() {
 public void doGameTick() {
   resolveGameInput();
   collectDiamond();
+  touchedSpikes();
   progressMovement();
   calculateOffset();
 
@@ -122,7 +128,8 @@ public void displayLevel() {
   imageMode(CENTER);
   drawSprites();
   drawDebugText();
-  loadMouse();
+  
+  
 }
 
 // Display active menus
@@ -237,7 +244,7 @@ public boolean placePlatform(float x, float y) {
     || y < 0
     || y > levelSizePx_y
     || checkCollision(player, platform)
-    || checkCollisionList(platform, collidables).size() > 0
+    || checkCollisionList(platform, collidables).size() > 0 
   ) {
     fail.play();
     return false;
@@ -293,6 +300,7 @@ public void drawDebugText() {
   textSize(24);
   textAlign(LEFT, TOP);
   fill(0, 408, 612);
+  
 
   String iQueue = "";
   for (int input : inputQueue) {
@@ -426,14 +434,22 @@ public void collectDiamond() {
   }
 }
 
+public void touchedSpikes() {
+  ArrayList<Sprite> spikes_collision_list = checkCollisionList(player, spikes);
+  if(spikes_collision_list.size() > 0){
+      resetPlayer();
+    }
+  }
+
 // Load a level
 public void loadLevel(int levelNum) {
   int maxRowLen = 0;
-
+  
   unloadLevel();
 
   // Load map file into memory
   String[] lines = loadStrings(String.format("map_%02d.csv", levelNum));
+  //String[] background = loadStrings(String.format("Background_%02d.png", levelNum));
 
   // Prevent loading if the file couldn't be read
   if (lines == null) {
@@ -472,6 +488,12 @@ public void loadLevel(int levelNum) {
         playerSpawnX = CELL_SIZE/2 + col * CELL_SIZE;
         playerSpawnY = CELL_SIZE/2 + row * CELL_SIZE;
       }
+      
+      else if(values[col].equals("S")){
+        Sprite sprite = new Sprite(spikes_img, SPRITE_SCALE);
+        sprite.setCenter(CELL_SIZE/2 + col * CELL_SIZE, CELL_SIZE/2 + row * CELL_SIZE);
+        spikes.add(sprite);
+      }
     }
   }
 
@@ -508,7 +530,6 @@ public void loadLevel(int levelNum) {
 public void unloadLevel() {
   platforms.clear();
   diamonds.clear();
-  playerPlatforms.clear();
   collidables.clear();
   collected_diamonds.clear();
   maxDiamonds = 0;
@@ -543,17 +564,17 @@ public void generateLevelBuffer() {
 
 // Generate buffer image for the background
 public void generateBackgroundBuffer() {
-  backgroundBuffer.beginDraw();
-  backgroundBuffer.noStroke();
-  backgroundBuffer.fill(backgroundColor);
-  backgroundBuffer.background(0);
-  backgroundBuffer.rect((pixelWidth - levelSizePx_x) / 2, (pixelHeight - levelSizePx_y) / 2, levelSizePx_x, levelSizePx_y);
-  backgroundBuffer.endDraw();
+  backGroundImage = loadImage("Background_00.png");
+  backGroundImage.resize(pixelWidth, pixelHeight);
 }
 
 // Reset the player position when the level is loaded(Also used when a player falls off the map)
 public void resetPlayer() {
-  loadMouse();
+  //  Unload the collision and sprite of the playerplatform from the game when the user resets the game.
+  ArrayList<Sprite> removalList = new ArrayList<>();
+  for (Sprite platform : removalList) {
+    removePlatform(platform);
+  }
   player.setCenter(playerSpawnX, playerSpawnY);
   player.change_x = 0;
   player.change_y = 0;
@@ -641,8 +662,14 @@ public void definePlayer(){
   
   // Load the different assets used during the game.
   square_img = loadImage("Square.png");
+ /* square_img1 = loadImage("Square01.png");
+  square_img2 = loadImage("Square02.png");
+  square_img3 = loadImage("Square03.png"); */
   diamond_img = loadImage("Diamond.png");
+  spikes_img = loadImage("Spikes.png");
+  mouseCursor = loadImage("Cursor.png");
   playerPlatform_img = loadImage("PlayerPlatform0.png");
+  
 
   // Spawn the player in game
   player = new Player(player_stand_img, player_move_img, player_jump_img, 3.0); 
@@ -673,6 +700,8 @@ public void noMap() {
   text(String.format("\"map_%02d.csv\" could not be loaded.", levelNum), LEFT_MARGIN, VERTICAL_MARGIN);
 }
 public void loadMouse() {
-  mouseCursor = loadImage("Cursor.png");
+ //Keep reloading the mouse cursor every 3000 frameCount because Processing keeps unloading the main cursor due to a bug.
+  if ((frameCount % 3000) == 0) {
   cursor(mouseCursor);
-}
+  }  
+ }
