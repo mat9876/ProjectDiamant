@@ -21,7 +21,7 @@ final static int RIGHT_FACING = 1;
 final static int LEFT_FACING = 2;
 
 // Intengers for the player character
-final static float MOVE_SPEED = 6;
+final static float MOVE_SPEED = 8;
 final static float GRAVITY = 0.8;
 final static float JUMP_SPEED = 12;
 final static float DEFAULT_PLAYER_X = 200;
@@ -33,6 +33,7 @@ boolean noMap = false;
 // Arraylist of platforms that appear in the game.
 ArrayList<Sprite> platforms = new ArrayList<>();
 ArrayList<Sprite> diamonds = new ArrayList<>();
+ArrayList<Sprite> spikes = new ArrayList<>();
 ArrayList<Sprite> collected_diamonds = new ArrayList<>();
 ArrayList<Sprite> playerPlatforms = new ArrayList<>();
 
@@ -45,7 +46,7 @@ ArrayList<Integer> inputQueue = new ArrayList<>();
 
 // Sprites / Images
 Player player;
-PImage square_img, diamond_img, playerPlatform_img;
+PImage square_img, square_img1, square_img2, square_img3, diamond_img, playerPlatform_img, spikes_img;
 
 // Keep track of current level number
 int levelNum = 0;
@@ -101,7 +102,7 @@ PGraphics backgroundBuffer;
 // Load image off the custom cursor in memory;
 PImage mouseCursor;
 
-// Menus
+// Define menus for playing
 Menu startMenu;
 Menu pauseMenu;
 Menu completeMenu;
