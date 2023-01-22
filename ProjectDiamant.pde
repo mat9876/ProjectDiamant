@@ -299,20 +299,7 @@ public void drawDebugText() {
     "Level: " + levelNum,
     "Diamonds: " + collected_diamonds.size() + "/" + maxDiamonds,
     "Platforms: " + playerPlatforms.size() + "/" + maxPlayerPlatformAmount,
-    "isGameOver: " + isGameOver,
-    "Collidables: " + collidables.size(),
-    String.format("Player location: %.1f; %.1f", player.center_x, player.center_y),
-    String.format("Screen Dimensions: %d x %d (%d x %d)", pixelWidth, pixelHeight, maxCells_x, maxCells_y),
-    String.format("Level Dimensions: %d x %d (%d x %d)", levelSizePx_x, levelSizePx_y, levelSize_x, levelSize_y),
-    "Viewport offset: " + offset_x + ", " + offset_y,
-    String.format("Speed: %01.1f (%02dfps)", frameRate/TARGET_FRAMERATE, round(frameRate)),
-    "frameCount: " + frameCount,
-    "inputQueue: " + iQueue,
-    "Animation debug:",
-    "Direction: " + player.direction,
-    "Change_X: " + player.change_x,
-    "World collision debug: ",
-    "Ground Level: " + levelSizePx_x
+    "Score: " + scoreForCurrentPlayer
   };
 
   for (int i = 0; i < textToDisplay.length; i++) {
@@ -415,6 +402,7 @@ public void collectDiamond() {
     for(Sprite diamond: diamond_collision_list){
       diamonds.remove(diamond);
       collected_diamonds.add(diamond);
+      scoreForCurrentPlayer = (scoreForCurrentPlayer + 50);
     }
   }
   if(collected_diamonds.size() == maxDiamonds){
@@ -470,17 +458,21 @@ public void loadLevel(int levelNum) {
         diamonds.add(sprite);
         maxDiamonds++;
       }
+      
+      else if(values[col].equals("S")){
+        Sprite sprite = new Sprite(spikes_img, SPRITE_SCALE);
+        sprite.setCenter(CELL_SIZE/2 + col * CELL_SIZE, CELL_SIZE/2 + row * CELL_SIZE);
+        platforms.add(sprite);
+        spikes.add(sprite);
+      }
+      
       //Set player spawn point based on the position of the letter P in the .csv file.
       else if(values[col].equals("P")){
         playerSpawnX = CELL_SIZE/2 + col * CELL_SIZE;
         playerSpawnY = CELL_SIZE/2 + row * CELL_SIZE;
       }
       
-      else if(values[col].equals("S")){
-        Sprite sprite = new Sprite(spikes_img, SPRITE_SCALE);
-        sprite.setCenter(CELL_SIZE/2 + col * CELL_SIZE, CELL_SIZE/2 + row * CELL_SIZE);
-        spikes.add(sprite);
-      }
+      
     }
   }
 
@@ -522,6 +514,7 @@ public void unloadLevel() {
   collidables.clear();
   collected_diamonds.clear();
   maxDiamonds = 0;
+  scoreForCurrentPlayer = (scoreForCurrentPlayer + 100);
   resetPlayer();
 }
 
@@ -589,6 +582,8 @@ public void resetPlayer() {
   for (Sprite platform : removalList) {
     removePlatform(platform);
   }
+  fail.play();
+  scoreForCurrentPlayer = (scoreForCurrentPlayer - 100);
   player.setCenter(playerSpawnX, playerSpawnY);
   player.change_x = 0;
   player.change_y = 0;
