@@ -103,6 +103,9 @@ PGraphics letterPillarBoxesBuffer;
 // Load image off the custom cursor in memory;
 PImage mouseCursor;
 
+// Value to keep track of the score of the player
+int scoreForCurrentPlayer;
+
 // Define menus for playing
 Menu startMenu;
 Menu pauseMenu;
