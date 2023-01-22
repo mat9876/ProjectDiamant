@@ -24,7 +24,7 @@ public class ButtonItem implements MenuItem {
   public float fontSize = 24;
   public float cornerRoundnessFactor = 0.33;
   public color textColor = color(255,255,255,255);
-  public color backgroundColor = color(64,64,64,192);
+  public color backgroundColor = color(255,255,255,64);
 
   public int size_x = 192;
   public int size_y = 64;

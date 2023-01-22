@@ -9,7 +9,7 @@ public class Menu {
   public int padding_x = 16;
   public int padding_y = 16;
   public float cornerRoundnessFactor = 0.33;
-  public color backgroundColor = color(16,16,16,192);
+  public color backgroundColor = color(0,0,0,128);
 
   public int size_x = 2 * margin_x;
   public int size_y = 2 * margin_y;
