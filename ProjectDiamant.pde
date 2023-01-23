@@ -613,8 +613,8 @@ public void resetPlayer() {
 
 // Logic for when the player completes a level
 public void levelComplete() {
-  levelNum++;
-  loadLevel(levelNum);
+  activeMenu = completeMenu;
+  isPaused = true;
 }
 
 // Calculate viewport offset for level scrolling
