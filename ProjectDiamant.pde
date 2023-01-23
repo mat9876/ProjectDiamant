@@ -117,6 +117,7 @@ public void displayLevel() {
   imageMode(CORNER);
   image(letterPillarBoxesBuffer, 0, 0);
   imageMode(CENTER);
+  // drawLevelStatText();
   drawDebugText();
 }
 
@@ -284,7 +285,8 @@ public boolean isLanded(Sprite sprite, ArrayList<Sprite>platforms) {
   return false;
 }
 
-public void drawDebugText() {
+// Text shown to player during level play
+public void drawLevelStatText() {
   textSize(24);
   textAlign(LEFT, TOP);
   fill(0, 408, 612);
@@ -300,6 +302,41 @@ public void drawDebugText() {
     "Diamonds: " + collected_diamonds.size() + "/" + maxDiamonds,
     "Platforms: " + playerPlatforms.size() + "/" + maxPlayerPlatformAmount,
     "Score: " + scoreForCurrentPlayer
+  };
+
+  for (int i = 0; i < textToDisplay.length; i++) {
+    text(textToDisplay[i], LEFT_MARGIN, VERTICAL_MARGIN + 28*i);
+  }
+}
+
+// Text shown to player during level play, for debugging
+public void drawDebugText() {
+  textSize(24);
+  fill(0, 408, 612);
+
+  String iQueue = "";
+  for (int input : inputQueue) {
+    iQueue += input + ";";
+  }
+
+  String[] textToDisplay = {
+    "Level: " + levelNum,
+    "Diamonds: " + collected_diamonds.size() + "/" + maxDiamonds,
+    "Platforms: " + playerPlatforms.size() + "/" + maxPlayerPlatformAmount,
+    "isGameOver: " + isGameOver,
+    "Collidables: " + collidables.size(),
+    String.format("Player location: %.1f; %.1f", player.center_x, player.center_y),
+    String.format("Screen Dimensions: %d x %d (%d x %d)", pixelWidth, pixelHeight, maxCells_x, maxCells_y),
+    String.format("Level Dimensions: %d x %d (%d x %d)", levelSizePx_x, levelSizePx_y, levelSize_x, levelSize_y),
+    "Viewport offset: " + offset_x + ", " + offset_y,
+    String.format("Speed: %01.1f (%02dfps)", frameRate/TARGET_FRAMERATE, round(frameRate)),
+    "frameCount: " + frameCount,
+    "inputQueue: " + iQueue,
+    "Animation debug:",
+    "Direction: " + player.direction,
+    "Change_X: " + player.change_x,
+    "World collision debug: ",
+    "Ground Level: " + levelSizePx_x
   };
 
   for (int i = 0; i < textToDisplay.length; i++) {
