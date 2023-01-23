@@ -45,6 +45,7 @@ public class MenuCell implements MenuItem {
     float cornerRoundnessPx = cornerRoundnessFactor * min(size_x, size_y) / 2;
 
     buffer.beginDraw();
+      buffer.clear();
       buffer.noStroke();
       buffer.textAlign(CENTER, CENTER);
       buffer.textSize(fontSize);
@@ -131,7 +132,7 @@ public class AdvanceButtonCell extends MenuCell {
  * Proper initialisation of this button should look like this:
  *   new SubmenuButtonCell(
  *     "BUTTON_TEXT",
- *     new Menu(
+ *     new Menu(1,
  *       new ExitButtonCell("Exit")
  *       new BackButtonCell("Back")
  *     )
@@ -154,31 +155,39 @@ public class SubmenuButtonCell extends MenuCell {
 }
 
 public class textCell extends MenuCell {
+  private textCellItem[] textItems;
+  private int[] textY;
   public float lineHeight = 1.25;
 
   public textCell(int size_x, textCellItem... items) {
     super();
-
-    int x = 0;
+    textItems = items;
 
     this.size_x = size_x;
     size_y = 0;
-    int[] textY = new int[items.length];
-    for (int i = 0; i < items.length; i++) {
-      textY[i] = size_y + round(items[i].fontSize / 2);
-      size_y += round(items[i].fontSize * lineHeight);
+    textY = new int[textItems.length];
+    for (int i = 0; i < textItems.length; i++) {
+      textY[i] = size_y + round(textItems[i].fontSize / 2);
+      size_y += round(textItems[i].fontSize * lineHeight);
     }
 
     buffer = createGraphics(size_x, size_y);
+    updateBuffer();
+  }
+
+  @Override
+  public void updateBuffer() {
+    int x = 0;
 
     buffer.beginDraw();
+      buffer.clear();
       buffer.noStroke();
 
-      for (int i = 0; i < items.length; i++) {
-        buffer.textAlign(items[i].alignment, CENTER);
-        buffer.textSize(items[i].fontSize);
-        buffer.fill(items[i].textColor);
-        switch (items[i].alignment) {
+      for (int i = 0; i < textItems.length; i++) {
+        buffer.textAlign(textItems[i].alignment, CENTER);
+        buffer.textSize(textItems[i].fontSize);
+        buffer.fill(textItems[i].textColor);
+        switch (textItems[i].alignment) {
           case LEFT:
             x = 0;
             break;
@@ -190,7 +199,7 @@ public class textCell extends MenuCell {
             break;
         }
 
-        buffer.text(items[i].txt, x, textY[i]);
+        buffer.text(textItems[i].txt, x, textY[i]);
       }
     buffer.endDraw();
   }

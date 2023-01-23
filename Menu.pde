@@ -14,10 +14,10 @@ public class Menu {
   public int size_x = 2 * margin_x;
   public int size_y = 2 * margin_y;
 
-  public int escapeAction;
+  public int escapeActionItemIndex;
 
-  public Menu(int escapeAction, MenuItem... items) {
-    this.escapeAction = escapeAction;
+  public Menu(int escapeActionItemIndex, MenuItem... items) {
+    this.escapeActionItemIndex = escapeActionItemIndex;
     menuItems = items;
     menuItemsBounds = new int[4][menuItems.length];
 
@@ -50,12 +50,13 @@ public class Menu {
     updateBuffer();
   }
 
-  // Redraw the menu image buffer
-  public void updateBuffer() {
+  // Draw the menu image buffer
+  private void updateBufferInit() {
     int menuItemPos_y = margin_y;
     float cornerRoundnessPx = cornerRoundnessFactor * min(size_x, size_y) / 2;
 
     buffer.beginDraw();
+      buffer.clear();
       buffer.imageMode(CORNER);
       buffer.noStroke();
       buffer.fill(backgroundColor);
@@ -68,6 +69,14 @@ public class Menu {
         buffer.image(menuItems[i].getBuffer(), menuItemsBounds[0][i], menuItemsBounds[2][i]);
       }
     buffer.endDraw();
+  }
+
+  // Redraw the buffer after initialisation
+  public void updateBuffer() {
+    for (MenuItem item : menuItems) {
+      item.updateBuffer();
+    }
+    updateBufferInit();
   }
 
   // Process a click
@@ -89,8 +98,8 @@ public class Menu {
   }
 
   public void doEscapeAction() {
-    if (escapeAction >= 0 && escapeAction < menuItems.length) {
-      menuItems[escapeAction].click();
+    if (escapeActionItemIndex >= 0 && escapeActionItemIndex < menuItems.length) {
+      menuItems[escapeActionItemIndex].click();
     }
   }
 

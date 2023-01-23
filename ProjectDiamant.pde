@@ -24,12 +24,6 @@ public void setup() {
 
 // Logic that should run every frame 
 public void draw() {
-  // Stop if there's no map loaded
-  if (noMap) {
-    noMap();
-    return;
-  }
-
   // Run & display pause menu
   if (isPaused) {
     doMenuTick();
@@ -441,29 +435,32 @@ public void collectDiamond() {
 public void touchedSpikes() {
   ArrayList<Sprite> spikes_collision_list = checkCollisionList(player, spikes);
   if(spikes_collision_list.size() > 0){
-      resetPlayer();
-    }
+    fail.play();
+    resetPlayer();
   }
+}
 
 // Load a level
 public void loadLevel(int levelNum) {
   int maxRowLen = 0;
-  
+
   unloadLevel();
 
   // Load map file into memory
   String[] lines = loadStrings(String.format("map_%02d.csv", levelNum));
 
-  // Prevent loading if the file couldn't be read
+  // Cancel loading if the file couldn't be read
   if (lines == null) {
-    noMap = true;
+    activeMenu = endMenu;
+    player.changeCenter(-200, -200); // Prevent displaying player on end screen
+    isPaused = true;
     return;
   }
 
   playerSpawnX = DEFAULT_PLAYER_X;
   playerSpawnY = DEFAULT_PLAYER_Y;
 
-  // Create platforms on canvas for players
+  // Create platforms
   for(int row = 0; row < lines.length; row++){
     String[] values = split(lines[row], ",");
     if (values.length > maxRowLen) {
@@ -471,7 +468,7 @@ public void loadLevel(int levelNum) {
     }
 
     for(int col = 0; col < values.length; col++){
-      //Create ground depending on the position of the number 1 in the .csv file.
+      // Create ground
       if(values[col].equals("1")){
         Sprite sprite = new Sprite(square_img, SPRITE_SCALE);
         sprite.setCenter(CELL_SIZE/2 + col * CELL_SIZE, CELL_SIZE/2 + row * CELL_SIZE);
@@ -479,7 +476,7 @@ public void loadLevel(int levelNum) {
         collidables.add(sprite);
       }
 
-      //Create diamonds depending on the position of the number 2 in the .csv file.
+      // Create diamonds
       else if(values[col].equals("2")){
         Sprite sprite = new Sprite(diamond_img, SPRITE_SCALE);
         sprite.setCenter(CELL_SIZE/2 + col * CELL_SIZE, CELL_SIZE/2 + row * CELL_SIZE);
@@ -487,6 +484,7 @@ public void loadLevel(int levelNum) {
         maxDiamonds++;
       }
       
+      // Create spikes
       else if(values[col].equals("S")){
         Sprite sprite = new Sprite(spikes_img, SPRITE_SCALE);
         sprite.setCenter(CELL_SIZE/2 + col * CELL_SIZE, CELL_SIZE/2 + row * CELL_SIZE);
@@ -494,7 +492,7 @@ public void loadLevel(int levelNum) {
         spikes.add(sprite);
       }
       
-      //Set player spawn point based on the position of the letter P in the .csv file.
+      // Set player spawn point
       else if(values[col].equals("P")){
         playerSpawnX = CELL_SIZE/2 + col * CELL_SIZE;
         playerSpawnY = CELL_SIZE/2 + row * CELL_SIZE;
@@ -537,13 +535,13 @@ public void loadLevel(int levelNum) {
 
 // Completely unload (and reset) any and all data of the level
 public void unloadLevel() {
+  resetPlayer();
   platforms.clear();
   diamonds.clear();
   collidables.clear();
   collected_diamonds.clear();
   maxDiamonds = 0;
   scoreForCurrentPlayer = (scoreForCurrentPlayer + 100);
-  resetPlayer();
 }
 
 // Reset level to base
@@ -554,11 +552,6 @@ public void resetLevel() {
     diamonds.add(diamond);
   }
   collected_diamonds.clear();
-
-  for (Sprite platform : playerPlatforms) {
-    collidables.remove(platform);
-  }
-  playerPlatforms.clear();
 }
 
 // Generate buffer image for the static parts of the level
@@ -575,6 +568,7 @@ public void generateLevelBuffer() {
 // Generate buffer image for the background
 public void generateBackgroundBuffer() {
   backgroundBuffer.beginDraw();
+    backgroundBuffer.clear();
     backgroundBuffer.noStroke();
     backgroundBuffer.fill(backgroundColor);
     backgroundBuffer.background(0);
@@ -585,6 +579,7 @@ public void generateBackgroundBuffer() {
 // Generate buffer image for letter- and pillarboxes
 public void generateLetterPillarBoxes() {
   letterPillarBoxesBuffer.beginDraw();
+    letterPillarBoxesBuffer.clear();
     letterPillarBoxesBuffer.noStroke();
     letterPillarBoxesBuffer.fill(0);
 
@@ -606,11 +601,10 @@ public void generateLetterPillarBoxes() {
 // Reset the player position when the level is loaded(Also used when a player falls off the map)
 public void resetPlayer() {
   //  Unload the collision and sprite of the playerplatform from the game when the user resets the game.
-  ArrayList<Sprite> removalList = new ArrayList<>();
+  ArrayList<Sprite> removalList = (ArrayList)playerPlatforms.clone();
   for (Sprite platform : removalList) {
     removePlatform(platform);
   }
-  fail.play();
   scoreForCurrentPlayer = (scoreForCurrentPlayer - 100);
   player.setCenter(playerSpawnX, playerSpawnY);
   player.change_x = 0;
@@ -745,17 +739,23 @@ public void initialiseMenus() {
     new AdvanceButtonCell("Begin"),
     new ExitButtonCell("Exit")
   );
-  pauseMenu = new Menu(-1,
+  pauseMenu = new Menu(1,
     new textCell(192, new textCellItem("Paused", 48, CENTER, color(255,255,255))),
     new BackButtonCell("Resume"),
     new ResetButtonCell("Reset"),
     new ExitButtonCell("Exit")
   );
-  completeMenu = new Menu(-1);
+  completeMenu = new Menu(1,
+    new textCell(256,
+      new textCellItem("Level complete!", 32, CENTER, color(192,128,32))
+    ),
+    new AdvanceButtonCell("Next Level"),
+    new ExitButtonCell("Exit")
+  );
   endMenu = new Menu(1,
     new textCell(256,
-      new textCellItem("You win!", 48, CENTER, color(255,255,255)),
-      new textCellItem("Congratulations!", 32, CENTER, color(255,255,255))
+      new textCellItem("Congratulations!", 32, CENTER, color(255,255,255)),
+      new textCellItem("You win!", 48, CENTER, color(255,255,255))
     ),
     new ExitButtonCell("Exit")
   );
@@ -763,11 +763,6 @@ public void initialiseMenus() {
   activeMenu = startMenu;
 }
 
-public void noMap() {
-  noLoop();
-  background(backgroundColor);
-  text(String.format("\"map_%02d.csv\" could not be loaded.", levelNum), LEFT_MARGIN, VERTICAL_MARGIN);
-}
 public void loadMouse() {
  //Keep reloading the mouse cursor every 3000 frameCount because Processing keeps unloading the main cursor due to a bug.
   if ((frameCount % 3000) == 0) {
