@@ -36,7 +36,7 @@ public class Menu {
 
     for (int i = 0; i < menuItems.length; i++) {
       // Set x-coordinates of left & right edges of the item
-      menuItemsBounds[0][i] = max_x - menuItems[i].getSize_x() + margin_x;
+      menuItemsBounds[0][i] = (max_x - menuItems[i].getSize_x()) / 2 + margin_x;
       menuItemsBounds[1][i] = menuItemsBounds[0][i] + menuItems[i].getSize_x();
     }
 
@@ -55,10 +55,12 @@ public class Menu {
     buffer.beginDraw();
       buffer.imageMode(CORNER);
       buffer.noStroke();
-
       buffer.fill(backgroundColor);
+
+      // Menu background
       buffer.rect(0, 0, size_x, size_y, cornerRoundnessPx);
 
+      // Menu items
       for (int i = 0; i < menuItems.length; i++) {
         buffer.image(menuItems[i].getBuffer(), menuItemsBounds[0][i], menuItemsBounds[2][i]);
       }

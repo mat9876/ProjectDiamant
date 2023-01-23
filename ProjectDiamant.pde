@@ -20,9 +20,6 @@ public void setup() {
   definePlayer();
 
   initialiseMenus();
-
-  // Load the first level at the start of the program or next level after collecting the max amount of diamonds.
-  loadLevel(levelNum);
 }
 
 // Logic that should run every frame 
@@ -44,6 +41,8 @@ public void draw() {
   // Run & display game
   doGameTick();
   displayLevel();
+  // drawLevelStatText();
+  drawDebugText();
   loadMouse();
 }
 
@@ -117,8 +116,6 @@ public void displayLevel() {
   imageMode(CORNER);
   image(letterPillarBoxesBuffer, 0, 0);
   imageMode(CENTER);
-  // drawLevelStatText();
-  drawDebugText();
 }
 
 // Display active menus
@@ -715,7 +712,8 @@ public void loadAssest() {
   screenCenter_x = pixelWidth / 2;
   screenCenter_y = pixelHeight / 2;
 
-  // Initialise buffers with static size
+  // Initialise buffers
+  levelBuffer = createGraphics(0,0);
   backgroundBuffer = createGraphics(pixelWidth, pixelHeight);
   letterPillarBoxesBuffer = createGraphics(pixelWidth, pixelHeight);
 
@@ -745,14 +743,28 @@ public void loadAssest() {
 
 // Initialise menus
 public void initialiseMenus() {
-  startMenu = new Menu();
+  startMenu = new Menu(
+    new textCell(256,
+      new textCellItem("Project", 48, CENTER, color(255,255,255)),
+      new textCellItem("Diamant", 52, CENTER, color(255,255,255))
+    ),
+    new AdvanceButtonCell("Begin"),
+    new ExitButtonCell("Exit")
+  );
   pauseMenu = new Menu(
-    new BackButtonItem("Resume"),
-    new ResetButtonItem("Reset"),
-    new ExitButtonItem("Exit")
+    new textCell(192, new textCellItem("Paused", 48, CENTER, color(255,255,255))),
+    new BackButtonCell("Resume"),
+    new ResetButtonCell("Reset"),
+    new ExitButtonCell("Exit")
   );
   completeMenu = new Menu();
-  endMenu = new Menu();
+  endMenu = new Menu(
+    new textCell(256,
+      new textCellItem("You win!", 48, CENTER, color(255,255,255)),
+      new textCellItem("Congratulations!", 32, CENTER, color(255,255,255))
+    ),
+    new ExitButtonCell("Exit")
+  );
 
   activeMenu = startMenu;
 }

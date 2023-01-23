@@ -49,7 +49,7 @@ Player player;
 PImage square_img, square_img1, square_img2, square_img3, diamond_img, playerPlatform_img, spikes_img;
 
 // Keep track of current level number
-int levelNum = 0;
+int levelNum = -1;
 // Maximum amount of platforms the player can create
 int maxPlayerPlatformAmount = 1;
 // Int to count the amount of diamonds in the game.
@@ -58,7 +58,7 @@ int maxDiamonds = 0;
 boolean isSpacebarActionable = true;
 // Display if the player can still play the game or not.  
 boolean isGameOver = false;
-boolean isPaused = false;
+boolean isPaused = true;
 // Center coordinates of the screen
 int screenCenter_x = 0;
 int screenCenter_y = 0;

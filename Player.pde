@@ -5,6 +5,8 @@ public class Player extends AnimatedSprite{
   public Player(PImage[] stand_img, PImage[] move_img, PImage[] jump_img, float scale) {
     super(new PImage[0], stand_img, move_img, scale);
 
+    setCenter(-200, -200);
+
     jump = jump_img;
     onPlatform = true;
   }

@@ -7,34 +7,39 @@ public interface MenuItem {
   int getSize_y();
 }
 
-/*
-// Base text class
-public class TextItem implements MenuItem {
-
-}
-*/
-
-// Base button class
-// Should be used only as a base; it has no functionality beyond that.
-public class ButtonItem implements MenuItem {
-  private PGraphics buffer;
+// Base menu cell class
+// Should be used only as a base; should not have functionality beyond that.
+public class MenuCell implements MenuItem {
+  public PGraphics buffer;
 
   public String text;
 
-  public float fontSize = 24;
-  public float cornerRoundnessFactor = 0.33;
-  public color textColor = color(255,255,255,255);
-  public color backgroundColor = color(255,255,255,64);
+  public float fontSize;
+  public float cornerRoundnessFactor;
+  public color textColor;
+  public color backgroundColor;
 
-  public int size_x = 192;
-  public int size_y = 64;
+  public int size_x;
+  public int size_y;
 
-  public ButtonItem(String buttonText) {
+  public MenuCell() {
+    fontSize = 24;
+    cornerRoundnessFactor = 0.33;
+    textColor = color(255,255,255,255);
+    backgroundColor = color(255,255,255,64);
+
+    size_x = 192;
+    size_y = 64;
+  }
+
+  public MenuCell(String buttonText) {
+    this();
     text = buttonText;
 
     buffer = createGraphics(size_x, size_y);
     updateBuffer();
   }
+
 
   public void updateBuffer() {
     float cornerRoundnessPx = cornerRoundnessFactor * min(size_x, size_y) / 2;
@@ -70,8 +75,8 @@ public class ButtonItem implements MenuItem {
 }
 
 // Button for going back in a menu and/or closing the menu
-public class BackButtonItem extends ButtonItem {
-  public BackButtonItem(String buttonText) {
+public class BackButtonCell extends MenuCell {
+  public BackButtonCell(String buttonText) {
     super(buttonText);
   }
 
@@ -82,8 +87,8 @@ public class BackButtonItem extends ButtonItem {
 }
 
 // Button for exiting the game
-public class ExitButtonItem extends ButtonItem {
-  public ExitButtonItem(String buttonText) {
+public class ExitButtonCell extends MenuCell {
+  public ExitButtonCell(String buttonText) {
     super(buttonText);
   }
 
@@ -94,8 +99,8 @@ public class ExitButtonItem extends ButtonItem {
 }
 
 // Button for resetting the current level
-public class ResetButtonItem extends ButtonItem {
-  public ResetButtonItem(String buttonText) {
+public class ResetButtonCell extends MenuCell {
+  public ResetButtonCell(String buttonText) {
     super(buttonText);
   }
 
@@ -106,21 +111,36 @@ public class ResetButtonItem extends ButtonItem {
   }
 }
 
+// Button for advancing to the next level
+public class AdvanceButtonCell extends MenuCell {
+  public AdvanceButtonCell(String buttonText) {
+    super(buttonText);
+  }
+
+  @Override
+  public void click() {
+    activeMenu.close();
+
+    levelNum += 1;
+    loadLevel(levelNum);
+  }
+}
+
 /**
  * Button for opening another menu.
  * Proper initialisation of this button should look like this:
- *   new SubmenuButtonItem(
+ *   new SubmenuButtonCell(
  *     "BUTTON_TEXT",
  *     new Menu(
- *       new ButtonItem("SUBMENU_BUTTON_TEXT")
- *       new BackButtonItem("Back")
+ *       new ExitButtonCell("Exit")
+ *       new BackButtonCell("Back")
  *     )
  *   )
  */
-public class SubmenuButtonItem extends ButtonItem {
+public class SubmenuButtonCell extends MenuCell {
   Menu menu = null;
 
-  public SubmenuButtonItem(String buttonText, Menu submenu) {
+  public SubmenuButtonCell(String buttonText, Menu submenu) {
     super(buttonText);
 
     menu = submenu;
@@ -130,5 +150,67 @@ public class SubmenuButtonItem extends ButtonItem {
   public void click() {
     menu.prev = activeMenu;
     activeMenu = menu;
+  }
+}
+
+public class textCell extends MenuCell {
+  public float lineHeight = 1.25;
+
+  public textCell(int size_x, textCellItem... items) {
+    super();
+
+    int x = 0;
+
+    this.size_x = size_x;
+    size_y = 0;
+    int[] textY = new int[items.length];
+    for (int i = 0; i < items.length; i++) {
+      textY[i] = size_y + round(items[i].fontSize / 2);
+      size_y += round(items[i].fontSize * lineHeight);
+    }
+
+    buffer = createGraphics(size_x, size_y);
+
+    buffer.beginDraw();
+      buffer.noStroke();
+
+      for (int i = 0; i < items.length; i++) {
+        buffer.textAlign(items[i].alignment, CENTER);
+        buffer.textSize(items[i].fontSize);
+        buffer.fill(items[i].textColor);
+        switch (items[i].alignment) {
+          case LEFT:
+            x = 0;
+            break;
+          case CENTER:
+            x = size_x / 2;
+            break;
+          case RIGHT:
+            x = size_x;
+            break;
+        }
+
+        buffer.text(items[i].txt, x, textY[i]);
+      }
+    buffer.endDraw();
+  }
+
+  @Override
+  public void click() {
+    return;
+  }
+}
+
+public class textCellItem {
+  public String txt;
+  public float fontSize;
+  public int alignment;
+  public color textColor;
+
+  public textCellItem(String txt, float fontSize, int alignment, color textColor) {
+    this.txt = txt;
+    this.fontSize = fontSize;
+    this.alignment = alignment;
+    this.textColor = textColor;
   }
 }
