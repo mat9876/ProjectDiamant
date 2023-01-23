@@ -14,7 +14,10 @@ public class Menu {
   public int size_x = 2 * margin_x;
   public int size_y = 2 * margin_y;
 
-  public Menu(MenuItem... items) {
+  public int escapeAction;
+
+  public Menu(int escapeAction, MenuItem... items) {
+    this.escapeAction = escapeAction;
     menuItems = items;
     menuItemsBounds = new int[4][menuItems.length];
 
@@ -82,6 +85,12 @@ public class Menu {
         menuItems[i].click();
         return;
       }
+    }
+  }
+
+  public void doEscapeAction() {
+    if (escapeAction >= 0 && escapeAction < menuItems.length) {
+      menuItems[escapeAction].click();
     }
   }
 

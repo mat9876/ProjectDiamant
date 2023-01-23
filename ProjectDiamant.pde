@@ -196,20 +196,14 @@ public void resolveMenuInput() {
     removalList.add(input);
 
     switch (input) {
-      // ESC / Right mouse button (return)
+      // ESC / Right mouse button
       case 27:
       case -39:
-        if (!activeMenu.up()) {
-          isPaused = false;
-        }
+        activeMenu.doEscapeAction();
         break;
       // Left mouse button (interact)
       case -37:
         activeMenu.processClick(mouseX, mouseY);
-        break;
-      // - (temporary exit)
-      case 45:
-        exit();
         break;
     }
   }
@@ -743,7 +737,7 @@ public void loadAssest() {
 
 // Initialise menus
 public void initialiseMenus() {
-  startMenu = new Menu(
+  startMenu = new Menu(2,
     new textCell(256,
       new textCellItem("Project", 48, CENTER, color(255,255,255)),
       new textCellItem("Diamant", 52, CENTER, color(255,255,255))
@@ -751,14 +745,14 @@ public void initialiseMenus() {
     new AdvanceButtonCell("Begin"),
     new ExitButtonCell("Exit")
   );
-  pauseMenu = new Menu(
+  pauseMenu = new Menu(-1,
     new textCell(192, new textCellItem("Paused", 48, CENTER, color(255,255,255))),
     new BackButtonCell("Resume"),
     new ResetButtonCell("Reset"),
     new ExitButtonCell("Exit")
   );
-  completeMenu = new Menu();
-  endMenu = new Menu(
+  completeMenu = new Menu(-1);
+  endMenu = new Menu(1,
     new textCell(256,
       new textCellItem("You win!", 48, CENTER, color(255,255,255)),
       new textCellItem("Congratulations!", 32, CENTER, color(255,255,255))
