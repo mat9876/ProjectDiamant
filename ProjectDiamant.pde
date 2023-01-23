@@ -83,15 +83,18 @@ public void mouseReleased() {
 //// UTILITY FUNCTIONS ////
 // Advance game logic by 1 "tick"
 public void doGameTick() {
+  levelFrameCount++;
   resolveGameInput();
   collectDiamond();
-  touchedSpikes();
   progressMovement();
   calculateOffset();
 
-  if (checkOutOfBounds(player)) {
+  if (checkOutOfBounds(player) || touchedSpikes()) {
+    fail.play();
     resetLevel();
   }
+
+  calculatePlayerScore();
 }
 
 // Resolve menu logic
@@ -115,6 +118,12 @@ public void displayLevel() {
 // Display active menus
 public void displayMenu() {
   image(activeMenu.getBuffer(), screenCenter_x, screenCenter_y);
+}
+
+// Switch to a menu
+public void switchMenu(Menu newMenu) {
+  newMenu.updateBuffer();
+  activeMenu = newMenu;
 }
 
 // Perform actions based on currently pressed keys
@@ -224,6 +233,7 @@ public boolean placePlatform(float x, float y) {
     return false;
   }
 
+  totalPlatformsPlaced++;
   playerPlatforms.add(platform);
   collidables.add(platform);
   success.play();
@@ -286,7 +296,7 @@ public void drawLevelStatText() {
     "Level: " + levelNum,
     "Diamonds: " + collected_diamonds.size() + "/" + maxDiamonds,
     "Platforms: " + playerPlatforms.size() + "/" + maxPlayerPlatformAmount,
-    "Score: " + scoreForCurrentPlayer
+    "Score: " + playerScore
   };
 
   for (int i = 0; i < textToDisplay.length; i++) {
@@ -308,6 +318,7 @@ public void drawDebugText() {
     "Level: " + levelNum,
     "Diamonds: " + collected_diamonds.size() + "/" + maxDiamonds,
     "Platforms: " + playerPlatforms.size() + "/" + maxPlayerPlatformAmount,
+    "Score: " + playerScore,
     "isGameOver: " + isGameOver,
     "Collidables: " + collidables.size(),
     String.format("Player location: %.1f; %.1f", player.center_x, player.center_y),
@@ -424,7 +435,7 @@ public void collectDiamond() {
     for(Sprite diamond: diamond_collision_list){
       diamonds.remove(diamond);
       collected_diamonds.add(diamond);
-      scoreForCurrentPlayer = (scoreForCurrentPlayer + 50);
+      playerScore += 50;
     }
   }
   if(collected_diamonds.size() == maxDiamonds){
@@ -432,12 +443,9 @@ public void collectDiamond() {
   }
 }
 
-public void touchedSpikes() {
+public boolean touchedSpikes() {
   ArrayList<Sprite> spikes_collision_list = checkCollisionList(player, spikes);
-  if(spikes_collision_list.size() > 0){
-    fail.play();
-    resetPlayer();
-  }
+  return spikes_collision_list.size() > 0;
 }
 
 // Load a level
@@ -451,7 +459,7 @@ public void loadLevel(int levelNum) {
 
   // Cancel loading if the file couldn't be read
   if (lines == null) {
-    activeMenu = endMenu;
+    switchMenu(endMenu);
     player.changeCenter(-200, -200); // Prevent displaying player on end screen
     isPaused = true;
     return;
@@ -525,7 +533,11 @@ public void loadLevel(int levelNum) {
   }
 
   player.setCenter(playerSpawnX, playerSpawnY);
-  activeMenu = pauseMenu;
+  playerScore = baseScore;
+  timesReset = 0;
+  totalPlatformsPlaced = 0;
+  levelFrameCount = 0;
+  switchMenu(pauseMenu);
 
   // Generate image buffers
   generateLevelBuffer();
@@ -541,11 +553,11 @@ public void unloadLevel() {
   collidables.clear();
   collected_diamonds.clear();
   maxDiamonds = 0;
-  scoreForCurrentPlayer = (scoreForCurrentPlayer + 100);
 }
 
 // Reset level to base
 public void resetLevel() {
+  timesReset++;
   resetPlayer();
   
   for (Sprite diamond : collected_diamonds) {
@@ -605,7 +617,6 @@ public void resetPlayer() {
   for (Sprite platform : removalList) {
     removePlatform(platform);
   }
-  scoreForCurrentPlayer = (scoreForCurrentPlayer - 100);
   player.setCenter(playerSpawnX, playerSpawnY);
   player.change_x = 0;
   player.change_y = 0;
@@ -613,7 +624,7 @@ public void resetPlayer() {
 
 // Logic for when the player completes a level
 public void levelComplete() {
-  activeMenu = completeMenu;
+  switchMenu(completeMenu);
   isPaused = true;
 }
 
@@ -747,7 +758,8 @@ public void initialiseMenus() {
   );
   completeMenu = new Menu(1,
     new textCell(256,
-      new textCellItem("Level complete!", 32, CENTER, color(192,128,32))
+      new textCellItem("Level complete!", 32, CENTER, color(192,128,32)),
+      new scoreTextCellItem("Score: ", 24, CENTER, color(255,255,255))
     ),
     new AdvanceButtonCell("Next Level"),
     new ExitButtonCell("Exit")
@@ -760,12 +772,22 @@ public void initialiseMenus() {
     new ExitButtonCell("Exit")
   );
 
-  activeMenu = startMenu;
+  switchMenu(startMenu);
+}
+
+public void calculatePlayerScore() {
+  int scoreBeforeMultipliers = baseScore - (levelFrameCount / 2) - (totalPlatformsPlaced * 50);
+  if (scoreBeforeMultipliers > 0) {
+    playerScore = scoreBeforeMultipliers / (timesReset + 1);
+  }
+  else {
+    playerScore = scoreBeforeMultipliers * (timesReset + 1);
+  }
 }
 
 public void loadMouse() {
- //Keep reloading the mouse cursor every 3000 frameCount because Processing keeps unloading the main cursor due to a bug.
+  //Keep reloading the mouse cursor every 3000 frameCount because Processing keeps unloading the main cursor due to a bug.
   if ((frameCount % 3000) == 0) {
-  cursor(mouseCursor);
+    cursor(mouseCursor);
   }  
- }
+}

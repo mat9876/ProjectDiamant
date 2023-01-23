@@ -117,7 +117,7 @@ public class Menu {
       isPaused = false;
       return false;
     }
-    activeMenu = prev;
+    switchMenu(prev);
     return true;
   }
 

@@ -150,7 +150,7 @@ public class SubmenuButtonCell extends MenuCell {
   @Override
   public void click() {
     menu.prev = activeMenu;
-    activeMenu = menu;
+    switchMenu(menu);
   }
 }
 
@@ -199,6 +199,7 @@ public class textCell extends MenuCell {
             break;
         }
 
+        textItems[i].update();
         buffer.text(textItems[i].txt, x, textY[i]);
       }
     buffer.endDraw();
@@ -221,5 +222,23 @@ public class textCellItem {
     this.fontSize = fontSize;
     this.alignment = alignment;
     this.textColor = textColor;
+  }
+
+  public void update() {
+    return;
+  }
+}
+
+public class scoreTextCellItem extends textCellItem {
+  String prefix;
+  public scoreTextCellItem(String txt, float fontSize, int alignment, color textColor) {
+    super(txt, fontSize, alignment, textColor);
+    prefix = this.txt;
+    update();
+  }
+
+  @Override
+  public void update() {
+    txt = String.format("%s%d", prefix, playerScore);
   }
 }

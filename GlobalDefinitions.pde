@@ -50,6 +50,7 @@ PImage square_img, square_img1, square_img2, square_img3, diamond_img, playerPla
 
 // Keep track of current level number
 int levelNum = -1;
+int levelFrameCount = 0;
 // Maximum amount of platforms the player can create
 int maxPlayerPlatformAmount = 1;
 // Int to count the amount of diamonds in the game.
@@ -104,7 +105,10 @@ PGraphics letterPillarBoxesBuffer;
 PImage mouseCursor;
 
 // Value to keep track of the score of the player
-int scoreForCurrentPlayer;
+int baseScore = 5000;
+int playerScore = 0;
+int timesReset = 0;
+int totalPlatformsPlaced = 0;
 
 // Define menus for playing
 Menu startMenu;
