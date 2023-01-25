@@ -2,9 +2,11 @@
 // Logic that should run at start-up but cannot be run in `setup()`
 public void settings() {
   // Disable DPI-scaling
+  // Processing bug: Works fully on sketch, but for exports this does not prevent changing of displayHeight/Width
+  // No known workarounds; this will be present until this is fixed on Processing's end
   System.setProperty("prism.allowhidpi", "false");
 
-  // Open in windowed mode if screen is larger than display, fullscreen if not.
+  // Set fullscreen & FX2D renderer
   fullScreen(FX2D);
 }
 
