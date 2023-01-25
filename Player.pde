@@ -8,6 +8,10 @@ public class Player extends AnimatedSprite{
     setCenter(-200, -200);
 
     jump = jump_img;
+    for (int i = 0; i < jump.length; i++) {
+      jump[i] = scaleImageNoBlur(jump[i], (int)w, (int)h);
+    }
+
     onPlatform = true;
   }
 //Override the current animation if the players changes action
