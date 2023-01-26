@@ -98,7 +98,7 @@ public void doGameTick() {
     resetLevel();
   }
 
-  calculateplayerScoreRef();
+  calculateplayerScore();
 }
 
 // Resolve menu logic
@@ -592,11 +592,11 @@ public void resetLevel() {
 // Generate buffer image for the static parts of the level
 public void generateLevelBuffer() {
   levelBuffer = createGraphics(levelSizePx_x, levelSizePx_y);
-  levelBuffer.beginDraw();
-  levelBuffer.imageMode(CENTER);
-  for (Sprite sprite : platforms) {
-    levelBuffer.image(sprite.image, sprite.center_x, sprite.center_y, sprite.w, sprite.h);
-  }
+    levelBuffer.beginDraw();
+    levelBuffer.imageMode(CENTER);
+    for (Sprite sprite : platforms) {
+      levelBuffer.image(sprite.image, sprite.center_x, sprite.center_y, sprite.w, sprite.h);
+    }
   levelBuffer.endDraw();
 }
 
@@ -704,9 +704,9 @@ public void calculateOffset() {
 // Scale an image without blurring it
 PImage scaleImageNoBlur(PImage img, int w, int h){
   PGraphics buffer = createGraphics(w, h);
-  buffer.noSmooth();
   buffer.beginDraw();
-  buffer.image(img, 0, 0, w, h);
+    buffer.noSmooth();
+    buffer.image(img, 0, 0, w, h);
   buffer.endDraw();
 
   return buffer.get();
@@ -827,13 +827,14 @@ public void initialiseMenus() {
   switchMenu(nameInputMenu);
 }
 
-public void calculateplayerScoreRef() {
-  int scoreBeforeMultipliers = baseScore - (levelFrameCount / 2) - (totalPlatformsPlaced * 50);
+public void calculateplayerScore() {
+  float scoreBeforeMultipliers = baseScore - (levelFrameCount / 2) - (totalPlatformsPlaced * 50);
+  float resetDivisor = (timesReset / 2) + 1;
   if (scoreBeforeMultipliers > 0) {
-    playerScoreRef.value = scoreBeforeMultipliers / (timesReset + 1);
+    playerScoreRef.value = round(scoreBeforeMultipliers / resetDivisor);
   }
   else {
-    playerScoreRef.value = scoreBeforeMultipliers * (timesReset + 1);
+    playerScoreRef.value = round(scoreBeforeMultipliers * resetDivisor);
   }
 }
 
