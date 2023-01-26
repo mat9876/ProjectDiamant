@@ -794,7 +794,7 @@ public void initialiseMenus() {
     new ResetButtonCell("Reset"),
     new ExitButtonCell("Exit")
   );
-  completeMenu = new Menu(1,
+  completeMenu = new Menu(2,
     new TextCell(256,
       new TextCellItem("Level complete!", 32, CENTER, color(192,128,32))
     ),
