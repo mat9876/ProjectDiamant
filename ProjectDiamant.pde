@@ -212,6 +212,24 @@ public void resolveMenuInput() {
       case -37:
         activeMenu.processClick(mouseX, mouseY);
         break;
+      default:
+        // Name input
+        if (activeMenu == nameInputMenu) {
+          // Spacebar or alphabetical
+          if (playerName.value.length() < MAX_PLAYERNAME_LENGTH && (input == 32 || (input >= 65 && input <= 90))) {
+            playerName.value += (char) input;
+            activeMenu.updateBuffer();
+          }
+          // Backspace
+          else if (input == 8 && playerName.value.length() > 0) {
+            playerName.value = playerName.value.substring(0, playerName.value.length() - 1);
+            activeMenu.updateBuffer();
+          }
+          // Enter / Return
+          else if ((input == 10 || input == 13) && playerName.value.length() > 0) {
+            activeMenu.doEscapeAction();
+          }
+        }
     }
   }
 
@@ -300,7 +318,7 @@ public void drawLevelStatText() {
     "Level: " + levelNum,
     "Diamonds: " + collected_diamonds.size() + "/" + maxDiamonds,
     "Platforms: " + playerPlatforms.size() + "/" + maxPlayerPlatformAmount,
-    "Score: " + playerScore
+    "Score: " + playerScore.value
   };
 
   for (int i = 0; i < textToDisplay.length; i++) {
@@ -322,7 +340,7 @@ public void drawDebugText() {
     "Level: " + levelNum,
     "Diamonds: " + collected_diamonds.size() + "/" + maxDiamonds,
     "Platforms: " + playerPlatforms.size() + "/" + maxPlayerPlatformAmount,
-    "Score: " + playerScore,
+    "Score: " + playerScore.value,
     "isGameOver: " + isGameOver,
     "Collidables: " + collidables.size(),
     String.format("Player location: %.1f; %.1f", player.center_x, player.center_y),
@@ -439,7 +457,7 @@ public void collectDiamond() {
     for(Sprite diamond: diamond_collision_list){
       diamonds.remove(diamond);
       collected_diamonds.add(diamond);
-      playerScore += 50;
+      playerScore.value += 50;
     }
   }
   if(collected_diamonds.size() == maxDiamonds){
@@ -537,7 +555,7 @@ public void loadLevel(int levelNum) {
   }
 
   player.setCenter(playerSpawnX, playerSpawnY);
-  playerScore = baseScore;
+  playerScore.value = baseScore;
   timesReset = 0;
   totalPlatformsPlaced = 0;
   levelFrameCount = 0;
@@ -628,6 +646,11 @@ public void resetPlayer() {
 
 // Logic for when the player completes a level
 public void levelComplete() {
+  // Calculate fake scores
+  randomSeed(levelNum);
+  teacherScore.value = max(playerScore.value, 3000) + round(random(0,1000));
+  lesserScore.value = max(playerScore.value, 3000) - round(random(0,1000));
+
   switchMenu(completeMenu);
   isPaused = true;
 }
@@ -746,46 +769,58 @@ public void loadAssest() {
 
 // Initialise menus
 public void initialiseMenus() {
+  nameInputMenu = new Menu(1,
+    new InputTextCell(256, 1,
+      new TextCellItem("Your name:", 24, CENTER, color(255,255,255)),
+      new VarTextCellItem(28, CENTER, color(224,224,224), "%s", playerName)
+    ),
+    new BackButtonCell("Continue")
+  );
   startMenu = new Menu(2,
-    new textCell(256,
-      new textCellItem("Project", 48, CENTER, color(255,255,255)),
-      new textCellItem("Diamant", 52, CENTER, color(255,255,255))
+    new TextCell(256,
+      new TextCellItem("Project", 48, CENTER, color(255,255,255)),
+      new TextCellItem("Diamant", 52, CENTER, color(92,224,255))
     ),
     new AdvanceButtonCell("Begin"),
     new ExitButtonCell("Exit")
   );
   pauseMenu = new Menu(1,
-    new textCell(192, new textCellItem("Paused", 48, CENTER, color(255,255,255))),
+    new TextCell(256, new TextCellItem("Paused", 48, CENTER, color(255,255,255))),
     new BackButtonCell("Resume"),
     new ResetButtonCell("Reset"),
     new ExitButtonCell("Exit")
   );
   completeMenu = new Menu(1,
-    new textCell(256,
-      new textCellItem("Level complete!", 32, CENTER, color(192,128,32)),
-      new scoreTextCellItem("Score: ", 24, CENTER, color(255,255,255))
+    new TextCell(256,
+      new TextCellItem("Level complete!", 32, CENTER, color(192,128,32)),
+      new TextCellItem("High-scores:", 18, CENTER, color(224,224,224)),
+      new VarTextCellItem(24, CENTER, color(255,255,255), "JOS P: %d", teacherScore),
+      new VarTextCellItem(24, CENTER, color(255,255,255), "%s: %d", playerName, playerScore),
+      new VarTextCellItem(24, CENTER, color(255,255,255), "JOHN D: %d", lesserScore)
     ),
     new AdvanceButtonCell("Next Level"),
     new ExitButtonCell("Exit")
   );
   endMenu = new Menu(1,
-    new textCell(256,
-      new textCellItem("Congratulations!", 32, CENTER, color(255,255,255)),
-      new textCellItem("You win!", 48, CENTER, color(255,255,255))
+    new TextCell(256,
+      new TextCellItem("Congratulations!", 32, CENTER, color(255,255,255)),
+      new TextCellItem("You win!", 48, CENTER, color(255,255,255))
     ),
     new ExitButtonCell("Exit")
   );
 
-  switchMenu(startMenu);
+  nameInputMenu.prev = startMenu;
+
+  switchMenu(nameInputMenu);
 }
 
 public void calculatePlayerScore() {
   int scoreBeforeMultipliers = baseScore - (levelFrameCount / 2) - (totalPlatformsPlaced * 50);
   if (scoreBeforeMultipliers > 0) {
-    playerScore = scoreBeforeMultipliers / (timesReset + 1);
+    playerScore.value = scoreBeforeMultipliers / (timesReset + 1);
   }
   else {
-    playerScore = scoreBeforeMultipliers * (timesReset + 1);
+    playerScore.value = scoreBeforeMultipliers * (timesReset + 1);
   }
 }
 

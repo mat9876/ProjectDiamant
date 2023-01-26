@@ -154,12 +154,13 @@ public class SubmenuButtonCell extends MenuCell {
   }
 }
 
-public class textCell extends MenuCell {
-  private textCellItem[] textItems;
+// Text cell for displaying fancy text
+public class TextCell extends MenuCell {
+  private TextCellItem[] textItems;
   private int[] textY;
   public float lineHeight = 1.25;
 
-  public textCell(int size_x, textCellItem... items) {
+  public TextCell(int size_x, TextCellItem... items) {
     super();
     textItems = items;
 
@@ -211,13 +212,32 @@ public class textCell extends MenuCell {
   }
 }
 
-public class textCellItem {
+// Text cell for an input field, with the specified item being considered the input field
+public class InputTextCell extends TextCell {
+  public int inputFieldIndex;
+  public boolean isFocused = false;
+
+  public InputTextCell(int size_x, int index, TextCellItem... items) {
+    super(size_x, items);
+    inputFieldIndex = index;
+  }
+}
+
+// TODO: Text cell for a scoreboard
+public class ScoreBoardCell extends TextCell {
+  public ScoreBoardCell(int size_x, TextCellItem... items) {
+    super(size_x, items);
+  }
+}
+
+// Base text cell item
+public class TextCellItem {
   public String txt;
   public float fontSize;
   public int alignment;
   public color textColor;
 
-  public textCellItem(String txt, float fontSize, int alignment, color textColor) {
+  public TextCellItem(String txt, float fontSize, int alignment, color textColor) {
     this.txt = txt;
     this.fontSize = fontSize;
     this.alignment = alignment;
@@ -229,16 +249,24 @@ public class textCellItem {
   }
 }
 
-public class scoreTextCellItem extends textCellItem {
-  String prefix;
-  public scoreTextCellItem(String txt, float fontSize, int alignment, color textColor) {
-    super(txt, fontSize, alignment, textColor);
-    prefix = this.txt;
+// Text cell item for displaying a score
+public class VarTextCellItem<T> extends TextCellItem {
+  public String formatString;
+  public Ref<T>[] variables;
+
+  public VarTextCellItem(float fontSize, int alignment, color textColor, String formatString, Ref<T>... variables) {
+    super("", fontSize, alignment, textColor);
+    this.formatString = formatString;
+    this.variables = variables;
     update();
   }
 
   @Override
   public void update() {
-    txt = String.format("%s%d", prefix, playerScore);
+    Object[] vars = new Object[variables.length];
+    for (int i = 0; i < variables.length; i ++) {
+      vars[i] = variables[i].value;
+    }
+    txt = String.format(formatString, vars);
   }
 }

@@ -27,6 +27,8 @@ final static float JUMP_SPEED = 12;
 final static float DEFAULT_PLAYER_X = 200;
 final static float DEFAULT_PLAYER_Y = 900;
 
+final static int MAX_PLAYERNAME_LENGTH = 16;
+
 //// GLOBAL VARIABLES ////
 // Indicator on whether or not a map is loaded
 boolean noMap = false;
@@ -104,13 +106,17 @@ PGraphics letterPillarBoxesBuffer;
 // Load image off the custom cursor in memory;
 PImage mouseCursor;
 
-// Value to keep track of the score of the player
+// Value to keep track meta stats
+Ref<String> playerName = new Ref<>("ANON");
 int baseScore = 5000;
-int playerScore = 0;
 int timesReset = 0;
 int totalPlatformsPlaced = 0;
+Ref<Integer> playerScore = new Ref<>(0);
+Ref<Integer> teacherScore = new Ref<>(0);
+Ref<Integer> lesserScore = new Ref<>(0);
 
 // Define menus for playing
+Menu nameInputMenu;
 Menu startMenu;
 Menu pauseMenu;
 Menu completeMenu;
