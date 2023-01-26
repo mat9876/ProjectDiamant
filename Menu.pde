@@ -1,6 +1,7 @@
 public class Menu {
-  private PGraphics buffer;
   private int[][] menuItemsBounds;
+
+  public PGraphics buffer;
   public MenuItem[] menuItems;
   public Menu prev = null;
 
@@ -13,6 +14,9 @@ public class Menu {
 
   public int size_x = 2 * margin_x;
   public int size_y = 2 * margin_y;
+
+  public int shortcutCooldownDuration = 30;
+  public int shortcutCooldownEnd = 0;
 
   public int escapeActionItemIndex;
 
@@ -98,9 +102,13 @@ public class Menu {
   }
 
   public void doEscapeAction() {
-    if (escapeActionItemIndex >= 0 && escapeActionItemIndex < menuItems.length) {
+    if (frameCount >= shortcutCooldownEnd && escapeActionItemIndex >= 0 && escapeActionItemIndex < menuItems.length) {
       menuItems[escapeActionItemIndex].click();
     }
+  }
+
+  public void startCooldown() {
+    shortcutCooldownEnd = frameCount + shortcutCooldownDuration;
   }
 
   // Close this menu and all parent menus
@@ -119,9 +127,5 @@ public class Menu {
     }
     switchMenu(prev);
     return true;
-  }
-
-  public PGraphics getBuffer() {
-    return buffer;
   }
 }

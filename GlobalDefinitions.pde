@@ -106,14 +106,17 @@ PGraphics letterPillarBoxesBuffer;
 // Load image off the custom cursor in memory;
 PImage mouseCursor;
 
-// Value to keep track meta stats
+// Value to keep track of meta stats
 Ref<String> playerName = new Ref<>("ANON");
+
 int baseScore = 5000;
 int timesReset = 0;
 int totalPlatformsPlaced = 0;
-Ref<Integer> playerScore = new Ref<>(0);
-Ref<Integer> teacherScore = new Ref<>(0);
-Ref<Integer> lesserScore = new Ref<>(0);
+
+Ref<Integer> playerScoreRef = new Ref<>(0);
+Ref<Integer> teacherScoreRef = new Ref<>(0);
+Ref<Integer> lesserScoreRef = new Ref<>(0);
+int[] totalScores = {0,0,0};
 
 // Define menus for playing
 Menu nameInputMenu;
