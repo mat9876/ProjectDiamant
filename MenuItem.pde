@@ -223,13 +223,6 @@ public class InputTextCell extends TextCell {
   }
 }
 
-// TODO: Text cell for a scoreboard
-public class ScoreBoardCell extends TextCell {
-  public ScoreBoardCell(int size_x, TextCellItem... items) {
-    super(size_x, items);
-  }
-}
-
 // Base text cell item
 public class TextCellItem {
   public String txt;
