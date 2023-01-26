@@ -649,7 +649,7 @@ public void levelComplete() {
   // Calculate fake scores
   randomSeed(levelNum);
   teacherScore.value = max(playerScore.value, 3000) + round(random(0,1000));
-  lesserScore.value = max(playerScore.value, 3000) - round(random(0,1000));
+  lesserScore.value = min(playerScore.value, 3000) - round(random(0,1000));
 
   switchMenu(completeMenu);
   isPaused = true;
