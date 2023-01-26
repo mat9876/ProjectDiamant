@@ -252,14 +252,12 @@ public boolean placePlatform(float x, float y) {
     || checkCollision(player, platform)
     || checkCollisionList(platform, collidables).size() > 0 
   ) {
-    fail.play();
     return false;
   }
 
   totalPlatformsPlaced++;
   playerPlatforms.add(platform);
   collidables.add(platform);
-  success.play();
   return true;
 }
 public void removePlatform(Sprite playerPlatform) {
@@ -460,6 +458,7 @@ public void collectDiamond() {
       collected_diamonds.add(diamond);
       playerScoreRef.value += 50;
     }
+    success.play();
   }
   if(collected_diamonds.size() == maxDiamonds){
     levelComplete();
