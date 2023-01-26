@@ -478,7 +478,7 @@ public void loadLevel(int levelNum) {
   unloadLevel();
 
   // Load map file into memory
-  String[] lines = loadStrings(String.format("map_%02d.csv", levelNum));
+  String[] lines = loadStrings(String.format("maps/map_%02d.csv", levelNum));
 
   // Cancel loading if the file couldn't be read
   if (lines == null) {
@@ -704,8 +704,8 @@ public void calculateOffset() {
 // Scale an image without blurring it
 PImage scaleImageNoBlur(PImage img, int w, int h){
   PGraphics buffer = createGraphics(w, h);
+  buffer.noSmooth();
   buffer.beginDraw();
-    buffer.noSmooth();
     buffer.image(img, 0, 0, w, h);
   buffer.endDraw();
 
@@ -730,9 +730,9 @@ boolean checkLineCollision(float x1a, float y1a, float x1b, float y1b, float x2a
 
 public void definePlayer(){
    // Load the assest related to the playable character
-  PImage[] player_stand_img = {loadImage("YSquare.png")};
-  PImage[] player_move_img = {loadImage("YSquare_1.png"), loadImage("YSquare_2.png")};
-  PImage[] player_jump_img = {loadImage("YSquare_Jump.png")};
+  PImage[] player_stand_img = {loadImage("img/YSquare.png")};
+  PImage[] player_move_img = {loadImage("img/YSquare_1.png"), loadImage("img/YSquare_2.png")};
+  PImage[] player_jump_img = {loadImage("img/YSquare_Jump.png")};
 
   // Spawn the player in game
   player = new Player(player_stand_img, player_move_img, player_jump_img, 3.0); 
@@ -748,18 +748,18 @@ public void loadAssest() {
   backgroundBuffer = createGraphics(pixelWidth, pixelHeight);
   letterPillarBoxesBuffer = createGraphics(pixelWidth, pixelHeight);
 
-  backgroundImage = loadImage("Background_00.png");
+  backgroundImage = loadImage("img/Background_00.png");
 
   // Load the different assets used during the game.
-  square_img = loadImage("Square.png");
-  diamond_img = loadImage("Diamond.png");
-  spikes_img = loadImage("Spikes.png");
-  mouseCursor = loadImage("Cursor.png");
-  playerPlatform_img = loadImage("PlayerPlatform0.png");
+  square_img = loadImage("img/Square.png");
+  diamond_img = loadImage("img/Diamond.png");
+  spikes_img = loadImage("img/Spikes.png");
+  mouseCursor = loadImage("img/Cursor.png");
+  playerPlatform_img = loadImage("img/PlayerPlatform0.png");
 
   //Define sound effects for use.
-  fail = new SoundFile(this, "fail.wav");
-  success = new SoundFile(this, "Success.wav");
+  fail = new SoundFile(this, "sfx/fail.wav");
+  success = new SoundFile(this, "sfx/Success.wav");
 
   // Determine max amount of cells that the current screen resolution can display
   maxCells_x = pixelWidth / CELL_SIZE + 1;
