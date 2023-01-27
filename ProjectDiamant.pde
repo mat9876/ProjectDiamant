@@ -217,17 +217,17 @@ public void resolveMenuInput() {
         // Name input
         if (activeMenu == nameInputMenu) {
           // Spacebar or alphabetical
-          if (playerName.value.length() < MAX_PLAYERNAME_LENGTH && (input == 32 || (input >= 65 && input <= 90))) {
-            playerName.value += (char) input;
+          if (playerNameRef.value.length() < MAX_PLAYERNAME_LENGTH && (input == 32 || (input >= 65 && input <= 90))) {
+            playerNameRef.value += (char) input;
             activeMenu.updateBuffer();
           }
           // Backspace
-          else if (input == 8 && playerName.value.length() > 0) {
-            playerName.value = playerName.value.substring(0, playerName.value.length() - 1);
+          else if (input == 8 && playerNameRef.value.length() > 0) {
+            playerNameRef.value = playerNameRef.value.substring(0, playerNameRef.value.length() - 1);
             activeMenu.updateBuffer();
           }
           // Enter / Return
-          else if ((input == 10 || input == 13) && playerName.value.length() > 0) {
+          else if ((input == 10 || input == 13) && playerNameRef.value.length() > 0) {
             activeMenu.doEscapeAction();
           }
         }
@@ -648,11 +648,11 @@ public void resetPlayer() {
 public void levelComplete() {
   // Calculate fake scores
   randomSeed(levelNum);
-  teacherScoreRef.value = max(playerScoreRef.value, 3000) + round(random(0,1000));
-  lesserScoreRef.value = min(playerScoreRef.value, 3000) - round(random(0,1000));
+  greaterScoreRef.value = max(playerScoreRef.value, baseScore / 2) + round(random(0, baseScore / 4));
+  lesserScoreRef.value = min(playerScoreRef.value, baseScore / 2) - round(random(0, baseScore / 4));
 
   totalScores[0] += playerScoreRef.value;
-  totalScores[1] += teacherScoreRef.value;
+  totalScores[1] += greaterScoreRef.value;
   totalScores[2] += lesserScoreRef.value;
 
   switchMenu(completeMenu);
@@ -760,6 +760,9 @@ public void loadAssest() {
   fail = new SoundFile(this, "sfx/fail.wav");
   success = new SoundFile(this, "sfx/Success.wav");
 
+  fail.amp(mainVolume);
+  success.amp(mainVolume);
+
   // Determine max amount of cells that the current screen resolution can display
   maxCells_x = pixelWidth / CELL_SIZE + 1;
   maxCells_y = pixelHeight / CELL_SIZE + 1;
@@ -774,9 +777,9 @@ public void loadAssest() {
 // Initialise menus
 public void initialiseMenus() {
   nameInputMenu = new Menu(1,
-    new InputTextCell(256, 1,
+    new InputTextCell(348, 1,
       new TextCellItem("Your name:", 24, CENTER, color(255,255,255)),
-      new VarTextCellItem(28, CENTER, color(224,224,224), "%s", playerName)
+      new VarTextCellItem(28, CENTER, color(224,224,224), "%s", playerNameRef)
     ),
     new BackButtonCell("Continue")
   );
@@ -800,8 +803,8 @@ public void initialiseMenus() {
     ),
     new TextCell(256,
       new TextCellItem("High-scores:", 20, CENTER, color(224,224,224)),
-      new VarTextCellItem(24, CENTER, color(255,255,255), "JOS P: %d", teacherScoreRef),
-      new VarTextCellItem(24, CENTER, color(92,224,255), "%s: %d", playerName, playerScoreRef),
+      new VarTextCellItem(24, CENTER, color(255,255,255), "JOS P: %d", greaterScoreRef),
+      new VarTextCellItem(24, CENTER, color(92,224,255), "%s: %d", playerNameRef, playerScoreRef),
       new VarTextCellItem(24, CENTER, color(255,255,255), "JOHN D: %d", lesserScoreRef)
     ),
     new AdvanceButtonCell("Next Level"),
@@ -814,8 +817,8 @@ public void initialiseMenus() {
     ),
     new TextCell(256,
       new TextCellItem("Final scores:", 20, CENTER, color(255,255,255)),
-      new VarTextCellItem(24, CENTER, color(255,255,255), "JOS P: %d", teacherScoreRef),
-      new VarTextCellItem(24, CENTER, color(92,224,255), "%s: %d", playerName, playerScoreRef),
+      new VarTextCellItem(24, CENTER, color(255,255,255), "JOS P: %d", greaterScoreRef),
+      new VarTextCellItem(24, CENTER, color(92,224,255), "%s: %d", playerNameRef, playerScoreRef),
       new VarTextCellItem(24, CENTER, color(255,255,255), "JOHN D: %d", lesserScoreRef)
     ),
     new ExitButtonCell("Exit")

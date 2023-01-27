@@ -107,16 +107,19 @@ PGraphics letterPillarBoxesBuffer;
 PImage mouseCursor;
 
 // Value to keep track of meta stats
-Ref<String> playerName = new Ref<>("ANON");
+Ref<String> playerNameRef = new Ref<>("ANON");
 
 int baseScore = 5000;
 int timesReset = 0;
 int totalPlatformsPlaced = 0;
 
 Ref<Integer> playerScoreRef = new Ref<>(0);
-Ref<Integer> teacherScoreRef = new Ref<>(0);
+Ref<Integer> greaterScoreRef = new Ref<>(0);
 Ref<Integer> lesserScoreRef = new Ref<>(0);
 int[] totalScores = {0,0,0};
+
+// Volume
+float mainVolume = 0.8;
 
 // Define menus for playing
 Menu nameInputMenu;
