@@ -572,6 +572,7 @@ public void unloadLevel() {
   resetPlayer();
   platforms.clear();
   diamonds.clear();
+  spikes.clear();
   collidables.clear();
   collected_diamonds.clear();
   maxDiamonds = 0;
